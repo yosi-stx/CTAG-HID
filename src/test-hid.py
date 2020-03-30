@@ -32,7 +32,7 @@ READ_TIMEOUT = 1000
 
 # WRITE_DATA = [b for b in bytes.fromhex("3f3ebb00b127ff00ff00ff00ffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")]
 WRITE_DATA = bytes.fromhex("3f3ebb00b127ff00ff00ff00ffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-WRITE_TIMEOUT = 1000
+WRITE_TIMEOUT = 10000
 
 def main():
 
@@ -52,7 +52,12 @@ def main():
         device.write(WRITE_DATA)
 
         bytes_read = device.read(size=READ_SIZE, timeout=READ_TIMEOUT)
-        pprint(bytes_read)
+        string = ""
+        for b in bytes_read:
+            string = string + "%x," % int(b)
+        print(string)
+
+        pass
 
     finally:
         if device != None:
