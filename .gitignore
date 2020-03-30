@@ -2,3 +2,4 @@
 *C_TAG-USB
 .vscode
 __pycache__
+test-*.py
