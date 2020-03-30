@@ -26,7 +26,7 @@ PRINT_TIME = 1.0 # Print every 1 second
 
 START_INDEX = 2 + 4 # Ignore the first two bytes, then skip the version (4 bytes)
 ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 4 * 2 + 1, 2)) + [START_INDEX + 6 * 2,]
-COUNTER_INDEX = 2 + 22 + 14 # Ignore the first two bytes, then skip XData1 (22 bytes) and OverSample (==XDataSlave1; 14 bytes)
+COUNTER_INDEX = 2 + 22 + 18 # Ignore the first two bytes, then skip XData1 (22 bytes) and OverSample (==XDataSlave1; 18 bytes)
 
 OUTER_HANDLE_CHANNEL1_STYLE = "OuterHandleChannel1"
 OUTER_HANDLE_CHANNEL2_STYLE = "OuterHandleChannel2"
