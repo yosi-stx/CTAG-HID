@@ -15,6 +15,9 @@ import hid
 
 VENDOR_ID = 0x24b3 # Simbionix
 PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
+# file1 = None
+# open recording log file:
+file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
@@ -92,6 +95,7 @@ def gui_loop(device):
         # Update the GUI
         if len(value) >= READ_SIZE:
             handler(value, do_print=do_print)
+            print("handler called")
 
         # Update the do_print flag
         do_print = (timer() - print_time) >= PRINT_TIME
@@ -109,6 +113,14 @@ def handler(value, do_print=False):
     encoder3 = analog[1]
     encoder4 = analog[2]
     clicker_analog = analog[4]
+    
+    # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
+    global file1
+    L = [ str(clicker_analog), "," ,"\n" ]  
+    file1.writelines(L) 
+
+
+
 
     bool_inner_isopen = bool((digital >> 0) & 0x0001)
     bool_outer_isopen = bool((digital >> 1) & 0x0001)
@@ -476,6 +488,9 @@ def main():
     global VENDOR_ID
     global PRODUCT_ID
     PATH = None
+    
+    # open recording log file:
+    # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
 
     # Parse the command line arguments
     parser = init_parser()
@@ -532,6 +547,8 @@ def main():
         # Run the GUI main loop
         root.mainloop()
     finally:
+        global file1
+        file1.close() #to change file access modes 
         if device != None:
             device.close()
 

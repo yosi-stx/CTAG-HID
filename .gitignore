@@ -3,3 +3,5 @@
 .vscode
 __pycache__
 test-*.py
+yg*.py
+log
