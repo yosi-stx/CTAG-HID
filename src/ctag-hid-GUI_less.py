@@ -14,7 +14,8 @@ VENDOR_ID = 0x24b3 # Simbionix
 PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = None
 # open recording log file:
-file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
+# file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
+file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
@@ -66,6 +67,8 @@ def gui_loop(device):
     write_time_capture = timer()
     skip_write = 0
     prev_counter = 0
+    read_cycle_counter = 0
+    seconds_counter = 0
     # cnt = None
     # prev_cnt = None
     # value = None
@@ -102,7 +105,7 @@ def gui_loop(device):
 
         # Measure the time
         time = timer()
-        print(" ")
+        # print(" ")
 
         # Read the packet from the device
         value = device.read(READ_SIZE, timeout=READ_TIMEOUT)
@@ -123,8 +126,13 @@ def gui_loop(device):
             # handler(value, do_print=do_print)
             # print("Received data: %s" % hexlify(value))
             Handler_Called = (timer() - handle_time)
-            if Handler_Called > 0.002 :
-                print("handler called: %.6f" % Handler_Called)
+            read_cycle_counter += 1
+            if read_cycle_counter >= 500 :
+                seconds_counter += 1
+                read_cycle_counter = 0
+                print( str(seconds_counter))
+            # if Handler_Called > 0.002 :
+                # print("handler called: %.6f" % Handler_Called)
             # print("time: %.6f" % time)
             handle_time = timer() 
             prev_counter = counter
