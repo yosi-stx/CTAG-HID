@@ -16,6 +16,7 @@ PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # open recording log file:
 # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
 file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
+file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
@@ -28,6 +29,8 @@ PRINT_TIME = 1.0 # Print every 1 second
 START_INDEX = 2 + 4 # Ignore the first two bytes, then skip the version (4 bytes)
 ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 4 * 2 + 1, 2)) + [START_INDEX + 6 * 2,]
 COUNTER_INDEX = 2 + 22 + 18 # Ignore the first two bytes, then skip XData1 (22 bytes) and OverSample (==XDataSlave1; 18 bytes)
+OVER_SAMPLE_INDEX = 2 + 22
+OVER_SAMPLE_INDEX_LIST = list(range(OVER_SAMPLE_INDEX, OVER_SAMPLE_INDEX + 9 * 2 + 1, 2))
 
 OUTER_HANDLE_CHANNEL1_STYLE = "OuterHandleChannel1"
 OUTER_HANDLE_CHANNEL2_STYLE = "OuterHandleChannel2"
@@ -114,14 +117,19 @@ def gui_loop(device):
         if len(value) >= READ_SIZE:
             # save into file:
             analog = [(int(value[i + 1]) << 8) + int(value[i]) for i in ANALOG_INDEX_LIST]
+            OverSample = [(int(value[i + 1]) << 8) + int(value[i]) for i in OVER_SAMPLE_INDEX_LIST]
             clicker_analog = analog[4]
             counter = (int(value[COUNTER_INDEX + 1]) << 8) + int(value[COUNTER_INDEX])
             count_dif = counter - prev_counter 
             global file1
-            if count_dif > 1 :
-                L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), " <<<<<--- " ,"\n" ]  
-            else:
-                L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
+            # if count_dif > 1 :
+                # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), " <<<<<--- " ,"\n" ]  
+            # else:
+                # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
+            L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
+            for i in range(0,9):
+                L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(count_dif), "\n" ]  
+                file2.writelines(L2) 
             file1.writelines(L) 
             # handler(value, do_print=do_print)
             # print("Received data: %s" % hexlify(value))
@@ -581,7 +589,9 @@ def main():
         input()
     finally:
         global file1
+        global file2
         file1.close() #to change file access modes 
+        file2.close() #to change file access modes 
         if device != None:
             device.close()
 

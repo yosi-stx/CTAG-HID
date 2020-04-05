@@ -4,4 +4,4 @@
 __pycache__
 test-*.py
 yg*.py
-log
+*csv
