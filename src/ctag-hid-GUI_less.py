@@ -127,6 +127,9 @@ def gui_loop(device):
             # else:
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
             L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
+            
+            # add the Data.Master.ADC[5] just before the OverSample elements.
+            file2.writelines(L) 
             for i in range(0,9):
                 L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(count_dif), "\n" ]  
                 file2.writelines(L2) 

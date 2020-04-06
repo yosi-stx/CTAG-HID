@@ -1,4 +1,4 @@
-a = csvread('C:\Work\Python\CTAG_HID\src\log\clicker_log.csv');
+% a = csvread('C:\Work\Python\CTAG_HID\src\log\clicker_log.csv');
 figure(1)
 % x1=100;
 x1=length(a);
@@ -14,7 +14,7 @@ plot(xa(1:x1),a(1:x1,2),'-or')
 
 hold on
 
-b = csvread('C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv');
+% b = csvread('C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv');
 % figure(2)
 
 % plot(y(:,2))
@@ -23,14 +23,6 @@ b = csvread('C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv');
 last_b_index = length(b);
 xb = [1:last_b_index] ;
 xb=xb';
-
-% add to index 1 every 9 samples:
-% for j = 1:rows(xb)
-	% if (mod(j,9)==0)
-		% xb(j) = xb(j)+1;
-	% endif
-% endfor
-
 plot(xb(1:x2),b(1:x2,2),'-*b')
 hold off
 axis ([8800 8880 -2 30])

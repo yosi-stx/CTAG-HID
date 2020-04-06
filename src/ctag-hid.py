@@ -95,7 +95,7 @@ def gui_loop(device):
         # Update the GUI
         if len(value) >= READ_SIZE:
             handler(value, do_print=do_print)
-            print("handler called")
+            # print("handler called")
 
         # Update the do_print flag
         do_print = (timer() - print_time) >= PRINT_TIME
