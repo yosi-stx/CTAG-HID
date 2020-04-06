@@ -5,3 +5,4 @@ __pycache__
 test-*.py
 yg*.py
 *csv
+clicker_log.txt

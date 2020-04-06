@@ -8,7 +8,9 @@ x2= 10*x1;
 
 % adjust the X axis index of the 2 mSec sample to the overSample indices 
 % xa = 9*a(:,1)-8;
-xa = 10*a(:,1)-9;
+% xa = 10*a(:,1)-9;
+xa = a(:,1) -(a(1,1) -1);
+xa = 10*xa-9;
 plot(xa(1:x1),a(1:x1,2),'-or')
 % return
 
@@ -33,4 +35,13 @@ xb=xb';
 
 plot(xb(1:x2),b(1:x2,2),'-*b')
 hold off
-axis ([8800 8880 -2 30])
+q = min(find(b(1:x2,2)>6));
+X_LO = q - 50;
+X_HI = q + 50;
+Y_LO = -2;
+Y_HI = b(X_HI,2) + 5;
+axis ([X_LO X_HI Y_LO Y_HI])
+ 
+% axis ([8800 8880 -2 30])
+% max count_dif
+max(b(1:x2,3))
