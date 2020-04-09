@@ -17,7 +17,7 @@ VENDOR_ID = 0x24b3 # Simbionix
 PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = None
 # open recording log file:
-file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
+file1 = open("C:\Work\Python\CTAG_HID\src\log\gui_clicker_log.csv","w") 
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms

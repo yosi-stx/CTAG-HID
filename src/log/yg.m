@@ -34,13 +34,25 @@ xb=xb';
 % endfor
 
 plot(xb(1:x2),b(1:x2,2),'-*b')
+
+%derivative
+a_diff = diff(a(:,2));
+a_diff_p= find(a_diff==0);
+plot(xa(a_diff_p),a(a_diff_p,2),'k-x')
+
+
+d=diff(b(:,2));
+% plot(-d,'o-r')
+% plot(-d,'p-m')
+
+%plot(-d,'p-k')
 hold off
 q = min(find(b(1:x2,2)>6));
 X_LO = q - 50;
 X_HI = q + 50;
 Y_LO = -2;
 Y_HI = b(X_HI,2) + 5;
-axis ([X_LO X_HI Y_LO Y_HI])
+% axis ([X_LO X_HI Y_LO Y_HI])
  
 % axis ([8800 8880 -2 30])
 % max count_dif
