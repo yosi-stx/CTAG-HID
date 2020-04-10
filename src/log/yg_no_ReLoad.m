@@ -1,5 +1,6 @@
 % a = csvread('C:\Work\Python\CTAG_HID\src\log\clicker_log.csv');
 figure(1)
+hold off
 % x1=100;
 x1=length(a);
 % x2= 9*x1;

@@ -1,24 +1,4 @@
-# Created by Octave 5.2.0, Tue Apr 07 23:15:02 2020 GMT <unknown@Owner-PC>
-# name: X_HI
-# type: scalar
-51
-
-
-# name: X_LO
-# type: scalar
--49
-
-
-# name: Y_HI
-# type: scalar
-3221
-
-
-# name: Y_LO
-# type: scalar
--2
-
-
+# Created by Octave 5.2.0, Fri Apr 10 17:46:57 2020 GMT <unknown@Owner-PC>
 # name: a
 # type: matrix
 # rows: 4497
@@ -94501,11 +94481,6 @@
 # name: last_b_index
 # type: scalar
 44980
-
-
-# name: q
-# type: scalar
-1
 
 
 # name: x1
