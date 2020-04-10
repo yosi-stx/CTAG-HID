@@ -1,5 +1,6 @@
 a = csvread('C:\Work\Python\CTAG_HID\src\log\clicker_log.csv');
 figure(1)
+hold off
 % x1=100;
 x1=length(a);
 % x2= 9*x1;
@@ -51,11 +52,11 @@ d=diff(b(:,2));
 % glitch
 
 hold off
-q = min(find(b(1:x2,2)>6));
-X_LO = q - 50;
-X_HI = q + 50;
-Y_LO = -2;
-Y_HI = b(X_HI,2) + 5;
+% q = min(find(b(1:x2,2)>6));
+% X_LO = q - 50;
+% X_HI = q + 50;
+% Y_LO = -2;
+% Y_HI = b(X_HI,2) + 5;
 % axis ([X_LO X_HI Y_LO Y_HI])
  
 % axis ([8800 8880 -2 30])

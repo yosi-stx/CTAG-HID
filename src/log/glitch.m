@@ -33,7 +33,7 @@ for j = 10:(rows(xb)-20)
 									plot([j+3 j+13],[b(j+3,2) b(j+13,2)],'b--x')
 									if( abs(b(j-1,2) - b(j,2)) > 5 )
 										glitchs_4p++;
-										glitches_4p(glitchs_4p) = j
+										glitches_4p(glitchs_4p) = j;
 									endif	
 									if (b(j+4,2)==b(j+14,2))
 										plot([j+4 j+14],[b(j+4,2) b(j+14,2)],'m-.x')
@@ -58,7 +58,7 @@ endfor
 glitchs_points = find(glitches > 10 );
 glitchs_3p
 glitchs_4p
-glitchs_5p
+% glitchs_5p
 
 for i=1:999
 	% axis([glitches_4p(i)-50 glitches_4p(i)+50 b(glitches_4p(i),2)-30 b(glitches_4p(i),2)+30 ])
@@ -69,3 +69,4 @@ for i=1:999
 	endif
 endfor
 hold off
+clear i j 
