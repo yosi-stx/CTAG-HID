@@ -102,7 +102,9 @@ for i=1:999
 	y_max = max(b(glitch_indexes,2))+15;
 	y_min = min(b(glitch_indexes,2))-15;
 	[glitch_index-30 glitch_index+30 y_min y_max];
-	i
+	% disp("loop_index:"),disp(loop_index)
+	% disp("loop_index:"),disp(loop_index)
+	printf("loop_index: %d    value index: %d\n", loop_index,glitch_index)
 	axis([glitch_index-30 glitch_index+30 y_min y_max])
 	
 	% axis([glitches_3p(i)-50 glitches_3p(i)+50 min(b(glitches_3p,2))-30 max(b(glitches_3p,2))+30 ])
