@@ -5,10 +5,11 @@ hold on
 
 TRESH_LO = 700;
 TRESH_HI = 2800;
-MAX_HI_STATE = 180;
+##MAX_HI_STATE = 180;
+MAX_HI_STATE = 290;
 %MAX_FALL_DOWN = 150; % enable 30 ms from Hi to Low.
 MAX_FALL_DOWN = 175; % enable 30 ms from Hi to Low.
-LINE_SIMB = 100;
+LINE_SIMB = 250;
 click_state = 1;
 click_state_prev = 1;
 click_state_changes = 0;
@@ -28,6 +29,15 @@ fail_reason = 0;
 fail_cntr = 0;
 fail_pos = 0;
 
+% draw thresholds lines..
+plot([0 length(sig)],[TRESH_HI TRESH_HI],'c--')
+plot([0 length(sig)],[TRESH_LO TRESH_LO],'g--')
+
+function plot_ix(point,LINE_SIMB,sig)
+  plot([point+LINE_SIMB point-LINE_SIMB],[sig(point)-LINE_SIMB sig(point)+LINE_SIMB],'-r')
+  plot([point-LINE_SIMB point+LINE_SIMB],[sig(point)-LINE_SIMB sig(point)+LINE_SIMB],'-r')
+endfunction
+
 for i = 20:length(sig)
   progress++;
   agr_progress++;
@@ -44,13 +54,16 @@ for i = 20:length(sig)
     case 1
       % check cross of TRESH_LO
       if( sig(i-1) <= TRESH_LO && sig(i) > TRESH_LO )
+        %myZoom(i,0.2);
         click_state++;
         cross_lo_up_pos = i;
       endif
     case {2,3,4} % 3 rises in signal. -> filter out to fast rise.
       if( sig(i-1) <= sig(i) )
+        %myZoom(i,0.2);
         click_state++;
       else
+        %myZoom(i,0.2);
         fail_cntr++;
         fail_reason(fail_cntr) = click_state;
         fail_pos(fail_cntr) = i;
@@ -70,8 +83,7 @@ for i = 20:length(sig)
       if( cross_hi_down_pos - cross_hi_up_pos < MAX_HI_STATE )
         click_state++;
       else
-        plot([i+LINE_SIMB i-LINE_SIMB],[sig(i)-LINE_SIMB sig(i)+LINE_SIMB],'-k')
-        plot([i-LINE_SIMB i+LINE_SIMB],[sig(i)-LINE_SIMB sig(i)+LINE_SIMB],'-k')
+        plot_ix(i,LINE_SIMB,sig)
         fail_cntr++;
         fail_reason(fail_cntr) = click_state;
         fail_pos(fail_cntr) = i;
@@ -87,8 +99,7 @@ for i = 20:length(sig)
         if( cross_lo_down_pos -  cross_hi_down_pos <= MAX_FALL_DOWN )
           click_state++;
         else
-          plot([i+LINE_SIMB i-LINE_SIMB],[sig(i)-LINE_SIMB sig(i)+LINE_SIMB],'-k')
-          plot([i-LINE_SIMB i+LINE_SIMB],[sig(i)-LINE_SIMB sig(i)+LINE_SIMB],'-k')
+          plot_ix(i,LINE_SIMB,sig)
           fail_cntr++;
           fail_reason(fail_cntr) = click_state;
           fail_pos(fail_cntr) = i;
@@ -103,10 +114,15 @@ for i = 20:length(sig)
       plot([cross_hi_up_pos i],[sig(cross_hi_up_pos) sig(i)], '-m')
       click_state = 1;
       myZoom(i,0.2);
-      ch = kbhit ();
+      %ch = kbhit ();
     otherwise
       otherwise_cntr++;
   endswitch
   
   
 endfor
+axis("auto")
+##print the detected clicks positions
+click_detect_pos
+
+

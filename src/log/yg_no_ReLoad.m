@@ -30,6 +30,7 @@ xb = [1:last_b_index] ;
 xb=xb';
 plot(xb(1:x2),b(1:x2,2),'-*b')
 
+
 %derivative
 a_diff = diff(a(:,2));
 a_diff_p= find(a_diff==0);
