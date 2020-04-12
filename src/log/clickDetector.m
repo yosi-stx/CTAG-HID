@@ -39,6 +39,7 @@ function plot_ix(point,LINE_SIMB,sig)
 endfunction
 
 for i = 20:length(sig)
+##for i = 24200:length(sig)
   progress++;
   agr_progress++;
   if (progress > progress10)
@@ -54,16 +55,17 @@ for i = 20:length(sig)
     case 1
       % check cross of TRESH_LO
       if( sig(i-1) <= TRESH_LO && sig(i) > TRESH_LO )
-        %myZoom(i,0.2);
+##        myZoom(i,0.2);
         click_state++;
         cross_lo_up_pos = i;
       endif
     case {2,3,4} % 3 rises in signal. -> filter out to fast rise.
       if( sig(i-1) <= sig(i) )
-        %myZoom(i,0.2);
-        click_state++;
+##        myZoom(i,0.2);
+##        click_state++;
+        click_state = 5;
       else
-        %myZoom(i,0.2);
+##        myZoom(i,0.2);
         fail_cntr++;
         fail_reason(fail_cntr) = click_state;
         fail_pos(fail_cntr) = i;
@@ -111,7 +113,12 @@ for i = 20:length(sig)
       click_index++;
       click_detect_pos(click_index) = i;
       click_hi_pos(click_index) = cross_hi_up_pos;
-      plot([cross_hi_up_pos i],[sig(cross_hi_up_pos) sig(i)], '-m')
+      % line indication of click:
+      %plot([cross_hi_up_pos i],[sig(cross_hi_up_pos) sig(i)], '-m')
+      % rectangle indication of click:
+      plot([cross_hi_up_pos cross_hi_up_pos],[TRESH_HI 4000], '-m')
+      plot([cross_hi_up_pos cross_lo_down_pos],[4000 4000], '-m')
+      plot([cross_lo_down_pos cross_lo_down_pos],[4000 TRESH_LO], '-m')
       click_state = 1;
       myZoom(i,0.2);
       %ch = kbhit ();
