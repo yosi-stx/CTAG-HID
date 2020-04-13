@@ -70,6 +70,7 @@ for i = 20:length(sig)
         fail_reason(fail_cntr) = click_state;
         fail_pos(fail_cntr) = i;
         click_state = 1;
+        plot_ix(i,LINE_SIMB/2,sig)
       endif
     case 5  % getting to the high point ...
       if( sig(i) > TRESH_HI )

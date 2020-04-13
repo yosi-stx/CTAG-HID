@@ -52,6 +52,7 @@ inner_clicker = list()
 red_handle = list()
 reset_check = list()
 counter_entry = list()
+clicker_counter_entry = list()
 
 root = None
 
@@ -107,6 +108,9 @@ def handler(value, do_print=False):
     digital = (int(value[START_INDEX + 1]) << 8) + int(value[START_INDEX + 0])
     analog = [(int(value[i + 1]) << 8) + int(value[i]) for i in ANALOG_INDEX_LIST]
     counter = (int(value[COUNTER_INDEX + 1]) << 8) + int(value[COUNTER_INDEX])
+	
+	
+    clicker_counter = (int(value[COUNTER_INDEX+2 + 1]) << 8) + int(value[COUNTER_INDEX+2])
 
     encoder1 = analog[3]
     encoder2 = analog[0]
@@ -133,6 +137,7 @@ def handler(value, do_print=False):
     int_inner_handle_channel2 = analog[3]
     int_clicker = clicker_analog
     int_counter = counter
+    int_clicker_counter = clicker_counter
     precentage_outer_handle_channel1 = int((int_outer_handle_channel1 / 4096) * 100)
     precentage_outer_handle_channel2 = int((int_outer_handle_channel2 / 4096) * 100)
     precentage_inner_handle_channel1 = int((int_inner_handle_channel1 / 4096) * 100)
@@ -155,6 +160,7 @@ def handler(value, do_print=False):
     checkbox_red_handle = red_handle
     checkbox_reset_check = reset_check
     entry_counter = counter_entry
+    entry_clicker_counter = clicker_counter_entry
 
     progressbar_style_outer_handle_channel1.configure(
         OUTER_HANDLE_CHANNEL1_STYLE,
@@ -191,6 +197,9 @@ def handler(value, do_print=False):
 
     entry_counter.delete(0, tk.END)
     entry_counter.insert(tk.END, "%d" % int_counter)
+
+    entry_clicker_counter.delete(0, tk.END)
+    entry_clicker_counter.insert(tk.END, "%d" % int_clicker_counter)
 
     root.update()
 
@@ -349,6 +358,13 @@ def my_widgets(frame):
         row=row,
         column=1
     )
+    ttk.Label(
+        frame,
+        text="Clicker Counter"
+    ).grid(
+        row=row,
+        column=2
+    )
 
     row += 1
 
@@ -373,6 +389,20 @@ def my_widgets(frame):
     w.grid(
         row=row,
         column=1
+    )
+    # yg: adding clicker counter display
+    w = ttk.Entry(
+        frame,
+        width=20,
+    )
+    global clicker_counter_entry
+    clicker_counter_entry = w
+    w.grid(
+        # padx=10,
+        # pady=5,
+        row=row,
+        column=2,
+        # sticky=tk.W,
     )
 
     row += 1
