@@ -36,13 +36,15 @@ OUTER_HANDLE_CHANNEL2_STYLE = "OuterHandleChannel2"
 INNER_HANDLE_CHANNEL1_STYLE = "InnerHandleChannel1"
 INNER_HANDLE_CHANNEL2_STYLE = "InnerHandleChannel2"
 CLICKER_STYLE = "Clicker"
+SLEEPTIMER_STYLE = "sleepTimer"
 
 style_names = [
     OUTER_HANDLE_CHANNEL1_STYLE,
     OUTER_HANDLE_CHANNEL2_STYLE,
     INNER_HANDLE_CHANNEL1_STYLE,
     INNER_HANDLE_CHANNEL2_STYLE,
-    CLICKER_STYLE
+    CLICKER_STYLE,
+    SLEEPTIMER_STYLE
 ]
 
 progressbar_styles = list()
@@ -111,6 +113,7 @@ def handler(value, do_print=False):
 	
 	
     clicker_counter = (int(value[COUNTER_INDEX+2 + 1]) << 8) + int(value[COUNTER_INDEX+2])
+    sleepTimer = (int(value[COUNTER_INDEX+4 + 1]) << 8) + int(value[COUNTER_INDEX+4])
 
     encoder1 = analog[3]
     encoder2 = analog[0]
@@ -136,6 +139,7 @@ def handler(value, do_print=False):
     int_inner_handle_channel1 = analog[0]
     int_inner_handle_channel2 = analog[3]
     int_clicker = clicker_analog
+    int_sleepTimer = sleepTimer
     int_counter = counter
     int_clicker_counter = clicker_counter
     precentage_outer_handle_channel1 = int((int_outer_handle_channel1 / 4096) * 100)
@@ -143,17 +147,19 @@ def handler(value, do_print=False):
     precentage_inner_handle_channel1 = int((int_inner_handle_channel1 / 4096) * 100)
     precentage_inner_handle_channel2 = int((int_inner_handle_channel2 / 4096) * 100)
     precentage_clicker = int((int_clicker / 4096) * 100)
-
+    precentage_sleepTimer = int((int_sleepTimer / 600) * 100)
     progressbar_style_outer_handle_channel1 = progressbar_styles[0]
     progressbar_style_outer_handle_channel2 = progressbar_styles[1]
     progressbar_style_inner_handle_channel1 = progressbar_styles[2]
     progressbar_style_inner_handle_channel2 = progressbar_styles[3]
     progressbar_style_clicker = progressbar_styles[4]
+    progressbar_style_sleepTimer = progressbar_styles[5]
     progressbar_outer_handle_channel1 = progressbars[0]
     progressbar_outer_handle_channel2 = progressbars[1]
     progressbar_inner_handle_channel1 = progressbars[2]
     progressbar_inner_handle_channel2 = progressbars[3]
     progressbar_clicker = progressbars[4]
+    progressbar_sleepTimer = progressbars[5]
     checkbox_outer_handle_isopen = isopen[0]
     checkbox_inner_handle_isopen = isopen[1]
     checkbox_inner_clicker = inner_clicker
@@ -182,12 +188,17 @@ def handler(value, do_print=False):
         CLICKER_STYLE,
         text=("%d" % int_clicker)
     )
+    progressbar_style_sleepTimer.configure(
+        SLEEPTIMER_STYLE,
+        text=("%d" % sleepTimer)
+    )
 
     progressbar_outer_handle_channel1["value"] = precentage_outer_handle_channel1
     progressbar_outer_handle_channel2["value"] = precentage_outer_handle_channel2
     progressbar_inner_handle_channel1["value"] = precentage_inner_handle_channel1
     progressbar_inner_handle_channel2["value"] = precentage_inner_handle_channel2
     progressbar_clicker["value"] = precentage_clicker
+    progressbar_sleepTimer["value"] = precentage_sleepTimer
 
     update_checkbox(checkbox_outer_handle_isopen, bool_outer_isopen)
     update_checkbox(checkbox_inner_handle_isopen, bool_inner_isopen)
@@ -204,6 +215,7 @@ def handler(value, do_print=False):
     root.update()
 
 PROGRESS_BAR_LEN = 300
+LONG_PROGRESS_BAR_LEN = 650
 
 def my_channel_row(frame, row, label, style):
     ttk.Label(
@@ -316,7 +328,10 @@ def my_widgets(frame):
                 )
             ]
         )
-        style.configure(name, background="lime")
+        if name == SLEEPTIMER_STYLE:
+            style.configure(name, foreground="white", background="blue")
+        else:
+            style.configure(name, background="lime")
 
 
     # Outer Handle
@@ -480,6 +495,39 @@ def my_widgets(frame):
         columnspan=2,
         sticky=tk.W,
     )
+
+    row += 1
+
+    # Seperator
+    row = my_seperator(frame, row)
+
+    # sleepTimer
+    ttk.Label(
+        frame,
+        text="Sleep Timer"
+    ).grid(
+        row=row,
+        column=0,
+        sticky=tk.E,
+    )
+
+    w = ttk.Progressbar(
+        frame,
+        orient=tk.HORIZONTAL,
+        length=LONG_PROGRESS_BAR_LEN,
+        style="sleepTimer"
+    )
+    progressbars.append(w)
+    w.grid(
+        row=row,
+        column=1,
+        columnspan=3
+    )
+
+    row += 1
+
+    # Seperator
+    row = my_seperator(frame, row)
 
 def init_parser():
     parser = argparse.ArgumentParser(
