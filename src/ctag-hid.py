@@ -147,7 +147,8 @@ def handler(value, do_print=False):
     precentage_inner_handle_channel1 = int((int_inner_handle_channel1 / 4096) * 100)
     precentage_inner_handle_channel2 = int((int_inner_handle_channel2 / 4096) * 100)
     precentage_clicker = int((int_clicker / 4096) * 100)
-    precentage_sleepTimer = int((int_sleepTimer / 600) * 100)
+    # precentage_sleepTimer = int((int_sleepTimer / 600) * 100)
+    precentage_sleepTimer = int(int_sleepTimer )
     progressbar_style_outer_handle_channel1 = progressbar_styles[0]
     progressbar_style_outer_handle_channel2 = progressbar_styles[1]
     progressbar_style_inner_handle_channel1 = progressbar_styles[2]
@@ -199,6 +200,7 @@ def handler(value, do_print=False):
     progressbar_inner_handle_channel2["value"] = precentage_inner_handle_channel2
     progressbar_clicker["value"] = precentage_clicker
     progressbar_sleepTimer["value"] = precentage_sleepTimer
+    progressbar_sleepTimer["maximum"] = 600
 
     update_checkbox(checkbox_outer_handle_isopen, bool_outer_isopen)
     update_checkbox(checkbox_inner_handle_isopen, bool_inner_isopen)
@@ -215,7 +217,7 @@ def handler(value, do_print=False):
     root.update()
 
 PROGRESS_BAR_LEN = 300
-LONG_PROGRESS_BAR_LEN = 650
+LONG_PROGRESS_BAR_LEN = 590
 
 def my_channel_row(frame, row, label, style):
     ttk.Label(
