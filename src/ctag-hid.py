@@ -331,9 +331,11 @@ def my_widgets(frame):
             ]
         )
         if name == SLEEPTIMER_STYLE:
-            style.configure(name, foreground="white", background="blue")
+            # style.configure(name, foreground="white", background="blue")
+            style.configure(name, foreground="white", background="#d9d9d9")
         else:
-            style.configure(name, background="lime")
+            # style.configure(name, background="lime")
+            style.configure(name, background="#06B025")
 
 
     # Outer Handle
