@@ -18,6 +18,7 @@ PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = None
 # open recording log file:
 file1 = open("C:\Work\Python\CTAG_HID\src\log\gui_clicker_log.csv","w") 
+ctag_fault = 0
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
@@ -58,6 +59,7 @@ red_handle = list()
 reset_check = list()
 counter_entry = list()
 clicker_counter_entry = list()
+fault_entry = list()
 special_cmd = 0
 ignore_red_handle_button = None
 ignore_red_handle_checkbutton = None
@@ -129,11 +131,13 @@ def handler(value, do_print=False):
     if do_print:
         print("Received data: %s" % hexlify(value))
 
+    global ctag_fault
+    ctag_fault = (int(value[START_INDEX+1]) & 0xF )
     digital = (int(value[START_INDEX + 1]) << 8) + int(value[START_INDEX + 0])
     analog = [(int(value[i + 1]) << 8) + int(value[i]) for i in ANALOG_INDEX_LIST]
     counter = (int(value[COUNTER_INDEX + 1]) << 8) + int(value[COUNTER_INDEX])
-	
-	
+    
+    
     clicker_counter = (int(value[COUNTER_INDEX+2 + 1]) << 8) + int(value[COUNTER_INDEX+2])
     sleepTimer = (int(value[COUNTER_INDEX+4 + 1]) << 8) + int(value[COUNTER_INDEX+4])
 
@@ -164,6 +168,7 @@ def handler(value, do_print=False):
     int_clicker = clicker_analog
     int_sleepTimer = sleepTimer
     int_counter = counter
+    int_ctag_fault = ctag_fault
     int_clicker_counter = clicker_counter
     precentage_outer_handle_channel1 = int((int_outer_handle_channel1 / 4096) * 100)
     precentage_outer_handle_channel2 = int((int_outer_handle_channel2 / 4096) * 100)
@@ -192,7 +197,8 @@ def handler(value, do_print=False):
     checkbox_ignore_red_handle = ignore_red_handle_checkbutton
     entry_counter = counter_entry
     entry_clicker_counter = clicker_counter_entry
-
+    entry_fault = fault_entry
+    
     progressbar_style_outer_handle_channel1.configure(
         OUTER_HANDLE_CHANNEL1_STYLE,
         text=("%d" % int_outer_handle_channel1)
@@ -238,6 +244,9 @@ def handler(value, do_print=False):
 
     entry_clicker_counter.delete(0, tk.END)
     entry_clicker_counter.insert(tk.END, "%d" % int_clicker_counter)
+
+    entry_fault.delete(0, tk.END)
+    entry_fault.insert(tk.END, "%d" % int_ctag_fault)
 
     root.update()
 
@@ -539,7 +548,7 @@ def my_widgets(frame):
     # Counter
     ttk.Label(
         frame,
-        text="Counter"
+        text="Packets Counter:"
     ).grid(
         row=row,
         column=0,
@@ -557,6 +566,31 @@ def my_widgets(frame):
         pady=5,
         row=row,
         column=1,
+        columnspan=2,
+        sticky=tk.W,
+    )
+
+    
+    # C_TAG Fault indication
+    ttk.Label(
+        frame,
+        text="Fault indication:"
+    ).grid(
+        row=row,
+        column=1,
+        sticky=tk.E,
+    )
+    w = ttk.Entry(
+        frame,
+        width=20,
+    )
+    global fault_entry
+    fault_entry = w
+    w.grid(
+        padx=10,
+        pady=5,
+        row=row,
+        column=2,
         columnspan=2,
         sticky=tk.W,
     )
