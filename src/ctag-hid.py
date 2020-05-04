@@ -23,6 +23,8 @@ READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
 
 WRITE_DATA = bytes.fromhex("3f3ebb00b127ff00ff00ff00ffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+DEFAULT_WRITE_DATA = WRITE_DATA
+WRITE_DATA_CMD_I = bytes.fromhex("3f3ebb00b127ff00ff00ff0049ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 
 SLEEP_AMOUNT = 0.002 # Read from HID every 2 milliseconds
 PRINT_TIME = 1.0 # Print every 1 second
@@ -47,6 +49,7 @@ style_names = [
     SLEEPTIMER_STYLE
 ]
 
+# global variables
 progressbar_styles = list()
 progressbars = list()
 isopen = list()
@@ -55,6 +58,7 @@ red_handle = list()
 reset_check = list()
 counter_entry = list()
 clicker_counter_entry = list()
+special_cmd = 0
 
 root = None
 
@@ -64,6 +68,10 @@ def update_checkbox(checkbox, bool_value):
     else:
         checkbox.deselect()
 
+def button_callback():
+    global special_cmd
+    special_cmd = 'I'
+	
 def gui_loop(device):
     do_print = True
     print_time = 0.0
@@ -71,13 +79,21 @@ def gui_loop(device):
     # cnt = None
     # prev_cnt = None
     # value = None
-
+    global special_cmd
+    
     while True:
         # Reset the counter
         if (do_print):
             print_time = timer()
 
         # Write to the device (request data; keep alive)
+        if special_cmd == 'I':
+            WRITE_DATA = WRITE_DATA_CMD_I
+            print("special_cmd I")
+            special_cmd = 0
+        else:
+            WRITE_DATA = DEFAULT_WRITE_DATA
+        
         device.write(WRITE_DATA)
 
         # If not enough time has passed, sleep for SLEEP_AMOUNT seconds
@@ -446,6 +462,14 @@ def my_widgets(frame):
         column=1
     )
 
+    ttk.Label(
+        frame,
+        text="Ignore RedHandle fault"
+    ).grid(
+        row=row,
+        column=2
+    )
+
     row += 1
 
     # Red handle and reset button data
@@ -468,6 +492,34 @@ def my_widgets(frame):
     w.grid(
         row=row,
         column=1
+    )
+# B = tkinter.Button(top, text ="Hello", command = ignoreCallBack)
+    
+    w = tk.Button(
+        frame,
+        text ="send ignore",
+        # command = ignoreCallBack
+        command = button_callback
+    )
+    global red_handle_ignore
+    red_handle_ignore = w     # there is no meaning for the button object name, the callback is used
+    w.grid(
+        row=row,
+        column=3
+    )
+    
+    # checkbox for the ignore red handle 
+    w = tk.Checkbutton(
+        frame,
+        state=tk.DISABLED
+    )
+    # global ignore_red
+    # ignore_red = w
+    global ignore_red_handle_checkbutton
+    ignore_red_handle_checkbutton = w
+    w.grid(
+        row=row,
+        column=2
     )
 
     row += 1
