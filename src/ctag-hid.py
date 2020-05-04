@@ -59,6 +59,9 @@ reset_check = list()
 counter_entry = list()
 clicker_counter_entry = list()
 special_cmd = 0
+ignore_red_handle_button = None
+ignore_red_handle_checkbutton = None
+ignore_red_handle_state = False
 
 root = None
 
@@ -70,7 +73,10 @@ def update_checkbox(checkbox, bool_value):
 
 def button_callback():
     global special_cmd
+    global ignore_red_handle_state
     special_cmd = 'I'
+    ignore_red_handle_state = True
+
 	
 def gui_loop(device):
     do_print = True
@@ -150,6 +156,7 @@ def handler(value, do_print=False):
     bool_clicker = bool((digital >> 2) & 0x0001)
     bool_reset = bool((digital >> 4) & 0x0001)
     bool_red_handle = bool((digital >> 7) & 0x0001)
+    bool_ignore_red_handle = ignore_red_handle_state
     int_outer_handle_channel1 = analog[1]
     int_outer_handle_channel2 = analog[2]
     int_inner_handle_channel1 = analog[0]
@@ -182,6 +189,7 @@ def handler(value, do_print=False):
     checkbox_inner_clicker = inner_clicker
     checkbox_red_handle = red_handle
     checkbox_reset_check = reset_check
+    checkbox_ignore_red_handle = ignore_red_handle_checkbutton
     entry_counter = counter_entry
     entry_clicker_counter = clicker_counter_entry
 
@@ -223,6 +231,7 @@ def handler(value, do_print=False):
     update_checkbox(checkbox_inner_clicker, bool_clicker)
     update_checkbox(checkbox_red_handle, bool_red_handle)
     update_checkbox(checkbox_reset_check, bool_reset)
+    update_checkbox(checkbox_ignore_red_handle, bool_ignore_red_handle)
 
     entry_counter.delete(0, tk.END)
     entry_counter.insert(tk.END, "%d" % int_counter)
