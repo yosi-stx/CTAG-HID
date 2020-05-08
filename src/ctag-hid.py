@@ -31,8 +31,7 @@ SLEEP_AMOUNT = 0.002 # Read from HID every 2 milliseconds
 PRINT_TIME = 1.0 # Print every 1 second
 
 START_INDEX = 2 + 4 # Ignore the first two bytes, then skip the version (4 bytes)
-# ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 4 * 2 + 1, 2)) + [START_INDEX + 6 * 2,]
-ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 8 * 2 + 1, 2)) 
+ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 4 * 2 + 1, 2)) + [START_INDEX + 6 * 2,]
 COUNTER_INDEX = 2 + 22 + 18 # Ignore the first two bytes, then skip XData1 (22 bytes) and OverSample (==XDataSlave1; 18 bytes)
 
 OUTER_HANDLE_CHANNEL1_STYLE = "OuterHandleChannel1"
@@ -41,7 +40,6 @@ INNER_HANDLE_CHANNEL1_STYLE = "InnerHandleChannel1"
 INNER_HANDLE_CHANNEL2_STYLE = "InnerHandleChannel2"
 CLICKER_STYLE = "Clicker"
 SLEEPTIMER_STYLE = "sleepTimer"
-BATTERY_LEVEL_STYLE = "batteryLevel"
 
 style_names = [
     OUTER_HANDLE_CHANNEL1_STYLE,
@@ -49,8 +47,7 @@ style_names = [
     INNER_HANDLE_CHANNEL1_STYLE,
     INNER_HANDLE_CHANNEL2_STYLE,
     CLICKER_STYLE,
-    SLEEPTIMER_STYLE,
-    BATTERY_LEVEL_STYLE
+    SLEEPTIMER_STYLE
 ]
 
 # global variables
@@ -148,13 +145,7 @@ def handler(value, do_print=False):
     encoder2 = analog[0]
     encoder3 = analog[1]
     encoder4 = analog[2]
-    MotorCur = analog[4]
-    clicker_analog = analog[5]
-    # ClickerRec = analog[6]
-    # batteryLevel = analog[6]
-    
-    # ClickerRec is actually connected to Pin of the VREF+ that is on that input P5.0
-    batteryLevel = analog[7]
+    clicker_analog = analog[4]
     
     # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
     global file1
@@ -176,7 +167,6 @@ def handler(value, do_print=False):
     int_inner_handle_channel2 = analog[3]
     int_clicker = clicker_analog
     int_sleepTimer = sleepTimer
-    int_batteryLevel = batteryLevel
     int_counter = counter
     int_ctag_fault = ctag_fault
     int_clicker_counter = clicker_counter
@@ -187,21 +177,18 @@ def handler(value, do_print=False):
     precentage_clicker = int((int_clicker / 4096) * 100)
     # precentage_sleepTimer = int((int_sleepTimer / 600) * 100)
     precentage_sleepTimer = int(int_sleepTimer )
-    precentage_batteryLevel = int((int_batteryLevel / 4096) * 100)
     progressbar_style_outer_handle_channel1 = progressbar_styles[0]
     progressbar_style_outer_handle_channel2 = progressbar_styles[1]
     progressbar_style_inner_handle_channel1 = progressbar_styles[2]
     progressbar_style_inner_handle_channel2 = progressbar_styles[3]
     progressbar_style_clicker = progressbar_styles[4]
     progressbar_style_sleepTimer = progressbar_styles[5]
-    progressbar_style_batteryLevel = progressbar_styles[6]
     progressbar_outer_handle_channel1 = progressbars[0]
     progressbar_outer_handle_channel2 = progressbars[1]
     progressbar_inner_handle_channel1 = progressbars[2]
     progressbar_inner_handle_channel2 = progressbars[3]
     progressbar_clicker = progressbars[4]
     progressbar_sleepTimer = progressbars[5]
-    progressbar_batteryLevel = progressbars[6]
     checkbox_outer_handle_isopen = isopen[0]
     checkbox_inner_handle_isopen = isopen[1]
     checkbox_inner_clicker = inner_clicker
@@ -236,10 +223,6 @@ def handler(value, do_print=False):
         SLEEPTIMER_STYLE,
         text=("%d" % sleepTimer)
     )
-    progressbar_style_batteryLevel.configure(
-        BATTERY_LEVEL_STYLE,
-        text=("%d" % batteryLevel)
-    )
 
     progressbar_outer_handle_channel1["value"] = precentage_outer_handle_channel1
     progressbar_outer_handle_channel2["value"] = precentage_outer_handle_channel2
@@ -248,7 +231,6 @@ def handler(value, do_print=False):
     progressbar_clicker["value"] = precentage_clicker
     progressbar_sleepTimer["value"] = precentage_sleepTimer
     progressbar_sleepTimer["maximum"] = 600
-    progressbar_batteryLevel["value"] = precentage_batteryLevel
 
     update_checkbox(checkbox_outer_handle_isopen, bool_outer_isopen)
     update_checkbox(checkbox_inner_handle_isopen, bool_inner_isopen)
@@ -385,9 +367,6 @@ def my_widgets(frame):
         if name == SLEEPTIMER_STYLE:
             # style.configure(name, foreground="white", background="blue")
             style.configure(name, foreground="white", background="#d9d9d9")
-        elif name == BATTERY_LEVEL_STYLE:
-            # style.configure(name, foreground="white", background="blue")
-            style.configure(name, foreground="white", background="#d92929")
         else:
             # style.configure(name, background="lime")
             style.configure(name, background="#06B025")
@@ -636,34 +615,6 @@ def my_widgets(frame):
         orient=tk.HORIZONTAL,
         length=LONG_PROGRESS_BAR_LEN,
         style="sleepTimer"
-    )
-    progressbars.append(w)
-    w.grid(
-        row=row,
-        column=1,
-        columnspan=3
-    )
-
-    row += 1
-
-    # Seperator
-    row = my_seperator(frame, row)
-
-    # battery level
-    ttk.Label(
-        frame,
-        text="battery level"
-    ).grid(
-        row=row,
-        column=0,
-        sticky=tk.E,
-    )
-
-    w = ttk.Progressbar(
-        frame,
-        orient=tk.HORIZONTAL,
-        length=LONG_PROGRESS_BAR_LEN,
-        style="batteryLevel"
     )
     progressbars.append(w)
     w.grid(
