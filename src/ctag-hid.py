@@ -240,6 +240,12 @@ def handler(value, do_print=False):
         BATTERY_LEVEL_STYLE,
         text=("%d" % batteryLevel)
     )
+    # if ( batteryLevel <= 2310 ):
+    if ( batteryLevel <= 2288 ):  # about 2.8 volt
+        progressbar_style_batteryLevel.configure(BATTERY_LEVEL_STYLE,foreground="white", background="#d92929")
+    else:
+        progressbar_style_batteryLevel.configure(BATTERY_LEVEL_STYLE, foreground="white", background="blue")
+    
 
     progressbar_outer_handle_channel1["value"] = precentage_outer_handle_channel1
     progressbar_outer_handle_channel2["value"] = precentage_outer_handle_channel2
