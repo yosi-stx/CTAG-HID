@@ -15,7 +15,8 @@ PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = None
 # open recording log file:
 # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
-file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
+# file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
+file1 = open("C:\Work\Python\CTAG_HID\src\log\motor_current.csv","w") 
 file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
 
 READ_SIZE = 64 # The size of the packet
@@ -27,7 +28,10 @@ SLEEP_AMOUNT = 0.002 # Read from HID every 2 milliseconds
 PRINT_TIME = 1.0 # Print every 1 second
 
 START_INDEX = 2 + 4 # Ignore the first two bytes, then skip the version (4 bytes)
-ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 4 * 2 + 1, 2)) + [START_INDEX + 6 * 2,]
+#ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 4 * 2 + 1, 2)) + [START_INDEX + 6 * 2,]
+#2020_05_28 - for recording of motor current.
+ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 8 * 2 + 1, 2)) 
+
 COUNTER_INDEX = 2 + 22 + 18 # Ignore the first two bytes, then skip XData1 (22 bytes) and OverSample (==XDataSlave1; 18 bytes)
 OVER_SAMPLE_INDEX = 2 + 22
 OVER_SAMPLE_INDEX_LIST = list(range(OVER_SAMPLE_INDEX, OVER_SAMPLE_INDEX + 9 * 2 + 1, 2))
@@ -118,7 +122,9 @@ def gui_loop(device):
             # save into file:
             analog = [(int(value[i + 1]) << 8) + int(value[i]) for i in ANALOG_INDEX_LIST]
             OverSample = [(int(value[i + 1]) << 8) + int(value[i]) for i in OVER_SAMPLE_INDEX_LIST]
-            clicker_analog = analog[4]
+            MotorCur = analog[4]  # new, after changing indexes.
+            clicker_analog = analog[5]
+            batteryLevel = analog[7]
             counter = (int(value[COUNTER_INDEX + 1]) << 8) + int(value[COUNTER_INDEX])
             count_dif = counter - prev_counter 
             global file1
@@ -126,10 +132,10 @@ def gui_loop(device):
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), " <<<<<--- " ,"\n" ]  
             # else:
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
-            L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
+            L = [ str(counter),",   ", str(MotorCur), ", " , str(count_dif), "\n" ]  
             
             # add the Data.Master.ADC[5] just before the OverSample elements.
-            file2.writelines(L) 
+            # file2.writelines(L) # commented out on 2020_05_28, for motor current recording.
             for i in range(0,9):
                 L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(count_dif), "\n" ]  
                 file2.writelines(L2) 
@@ -164,7 +170,7 @@ def handler(value, do_print=False):
     encoder2 = analog[0]
     encoder3 = analog[1]
     encoder4 = analog[2]
-    clicker_analog = analog[4]
+    clicker_analog = analog[5]
     
     # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
     global file1

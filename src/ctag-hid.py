@@ -42,6 +42,7 @@ INNER_HANDLE_CHANNEL2_STYLE = "InnerHandleChannel2"
 CLICKER_STYLE = "Clicker"
 SLEEPTIMER_STYLE = "sleepTimer"
 BATTERY_LEVEL_STYLE = "batteryLevel"
+MOTOR_CURRENT_STYLE = "motorCurrent"
 
 style_names = [
     OUTER_HANDLE_CHANNEL1_STYLE,
@@ -50,7 +51,8 @@ style_names = [
     INNER_HANDLE_CHANNEL2_STYLE,
     CLICKER_STYLE,
     SLEEPTIMER_STYLE,
-    BATTERY_LEVEL_STYLE
+    BATTERY_LEVEL_STYLE,
+    MOTOR_CURRENT_STYLE
 ]
 
 # global variables
@@ -177,6 +179,7 @@ def handler(value, do_print=False):
     int_clicker = clicker_analog
     int_sleepTimer = sleepTimer
     int_batteryLevel = batteryLevel
+    int_MotorCur = MotorCur
     int_counter = counter
     int_ctag_fault = ctag_fault
     int_clicker_counter = clicker_counter
@@ -188,6 +191,7 @@ def handler(value, do_print=False):
     # precentage_sleepTimer = int((int_sleepTimer / 600) * 100)
     precentage_sleepTimer = int(int_sleepTimer )
     precentage_batteryLevel = int((int_batteryLevel / 4096) * 100)
+    precentage_MotorCur = int((int_MotorCur / 4096) * 100)
     progressbar_style_outer_handle_channel1 = progressbar_styles[0]
     progressbar_style_outer_handle_channel2 = progressbar_styles[1]
     progressbar_style_inner_handle_channel1 = progressbar_styles[2]
@@ -195,6 +199,7 @@ def handler(value, do_print=False):
     progressbar_style_clicker = progressbar_styles[4]
     progressbar_style_sleepTimer = progressbar_styles[5]
     progressbar_style_batteryLevel = progressbar_styles[6]
+    progressbar_style_MotorCur = progressbar_styles[7]
     progressbar_outer_handle_channel1 = progressbars[0]
     progressbar_outer_handle_channel2 = progressbars[1]
     progressbar_inner_handle_channel1 = progressbars[2]
@@ -202,6 +207,7 @@ def handler(value, do_print=False):
     progressbar_clicker = progressbars[4]
     progressbar_sleepTimer = progressbars[5]
     progressbar_batteryLevel = progressbars[6]
+    progressbar_MotorCur = progressbars[7]
     checkbox_outer_handle_isopen = isopen[0]
     checkbox_inner_handle_isopen = isopen[1]
     checkbox_inner_clicker = inner_clicker
@@ -240,6 +246,10 @@ def handler(value, do_print=False):
         BATTERY_LEVEL_STYLE,
         text=("%d" % batteryLevel)
     )
+    progressbar_style_MotorCur.configure(
+        MOTOR_CURRENT_STYLE,
+        text=("%d" % MotorCur)
+    )
     # if ( batteryLevel <= 2310 ):
     if ( batteryLevel <= 2288 ):  # about 2.8 volt
         progressbar_style_batteryLevel.configure(BATTERY_LEVEL_STYLE,foreground="white", background="#d92929")
@@ -255,6 +265,7 @@ def handler(value, do_print=False):
     progressbar_sleepTimer["value"] = precentage_sleepTimer
     progressbar_sleepTimer["maximum"] = 600
     progressbar_batteryLevel["value"] = precentage_batteryLevel
+    progressbar_MotorCur["value"] = precentage_MotorCur
 
     update_checkbox(checkbox_outer_handle_isopen, bool_outer_isopen)
     update_checkbox(checkbox_inner_handle_isopen, bool_inner_isopen)
@@ -670,6 +681,34 @@ def my_widgets(frame):
         orient=tk.HORIZONTAL,
         length=LONG_PROGRESS_BAR_LEN,
         style="batteryLevel"
+    )
+    progressbars.append(w)
+    w.grid(
+        row=row,
+        column=1,
+        columnspan=3
+    )
+
+    row += 1
+
+    # Seperator
+    row = my_seperator(frame, row)
+
+    # Motor Cur
+    ttk.Label(
+        frame,
+        text="Motor Current"
+    ).grid(
+        row=row,
+        column=0,
+        sticky=tk.E,
+    )
+
+    w = ttk.Progressbar(
+        frame,
+        orient=tk.HORIZONTAL,
+        length=LONG_PROGRESS_BAR_LEN,
+        style="motorCurrent"
     )
     progressbars.append(w)
     w.grid(
