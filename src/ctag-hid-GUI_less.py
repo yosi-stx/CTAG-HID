@@ -29,6 +29,8 @@ prev_int_inner_handle_channel = [5555,5555]
 # prev_int_inner_handle_channel2 = 5555
 Delta_Inner = 0
 Delta_Inner2 = 0
+Active_Encoder = 0
+Check_Change_Channel = 0
 
 
 READ_SIZE = 64 # The size of the packet
@@ -99,6 +101,8 @@ def gui_loop(device):
     global InnerHandleFULLValue
     global DEAD_ZONE_LOWER_THR
     global DEAD_ZONE_UPPER_THR
+    global Active_Encoder
+    global Check_Change_Channel
 
 
     while True:
@@ -158,6 +162,7 @@ def gui_loop(device):
             # int_inner_handle_channel[1] = analog[3]
             if prev_int_inner_handle_channel[0] == 5555:
                 prev_int_inner_handle_channel = [int_inner_handle_channel[0],int_inner_handle_channel[1]]
+                Active_Encoder = 0
                 # prev_int_inner_handle_channel2 = int_inner_handle_channel[1]
             
             # DEAD_ZONE_LOWER_THR 300
@@ -170,15 +175,37 @@ def gui_loop(device):
             else:
                   # // check if last 2 samples are in the "live zone", 2 samples are needed to check stability 
                   # // (in the dead zone we can get garbage values, which might be in the right range)
-                if int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
-                   int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR and \
-                   prev_int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
-                   prev_int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR:
-                    Delta_Inner = -(int_inner_handle_channel[0] - prev_int_inner_handle_channel[0])
-                    InnerHandleFULLValue += Delta_Inner
+                # if int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
+                   # int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR and \
+                   # prev_int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
+                   # prev_int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR:
+                    # Delta_Inner = -(int_inner_handle_channel[0] - prev_int_inner_handle_channel[Active_Encoder])
+                    # InnerHandleFULLValue += Delta_Inner
+                # else:
+                    # Delta_Inner = -(int_inner_handle_channel[1] - prev_int_inner_handle_channel[1])
+                    # InnerHandleFULLValue += Delta_Inner
+
+                Delta_Inner = -(int_inner_handle_channel[Active_Encoder] - prev_int_inner_handle_channel[Active_Encoder])
+                InnerHandleFULLValue += Delta_Inner
+
+            if( Check_Change_Channel > 0):
+                Check_Change_Channel -= 1
+
+            # if( Check_Change_Channel == 0):
+            if  int_inner_handle_channel[Active_Encoder] > DEAD_ZONE_LOWER_THR and \
+                int_inner_handle_channel[Active_Encoder] < DEAD_ZONE_UPPER_THR and \
+                prev_int_inner_handle_channel[Active_Encoder] > DEAD_ZONE_LOWER_THR and \
+                prev_int_inner_handle_channel[Active_Encoder] < DEAD_ZONE_UPPER_THR:
+                # stay with the active channel
+                pass
+            else:
+                #change Active_Encoder
+                if (Active_Encoder == 1):
+                    Active_Encoder = 0
                 else:
-                    Delta_Inner = -(int_inner_handle_channel[1] - prev_int_inner_handle_channel[1])
-                    InnerHandleFULLValue += Delta_Inner
+                    Active_Encoder = 1
+                # if active channel was change, dont change again for 50 mS (25 cycles)
+                Check_Change_Channel = 25
 
             if InnerHandleFULLValue < 0 :
                 InnerHandleFULLValue = 0 
@@ -196,7 +223,10 @@ def gui_loop(device):
             # else:
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
             # L = [ str(counter),",   ", str(MotorCur), ", " , str(InnerHandleFULLValue), "\n" ]  
-            L = [ str(int_inner_handle_channel[1]),",   ", str(int_inner_handle_channel[0]), ", " , str(InnerHandleFULLValue), "\n" ]  
+            # L = [ str(int_inner_handle_channel[1]),",   ", str(int_inner_handle_channel[0]), ", " \
+                 # , str(InnerHandleFULLValue),", " , str(Active_Encoder), "\n" ]  
+            L = [ str(Delta_Inner),",   ", str(int_inner_handle_channel[0]), ", " \
+                 , str(InnerHandleFULLValue),", " , str(Active_Encoder), "\n" ]  
             
             # add the Data.Master.ADC[5] just before the OverSample elements.
             # file2.writelines(L) # commented out on 2020_05_28, for motor current recording.
