@@ -19,6 +19,18 @@ PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 file1 = open("C:\Work\Python\CTAG_HID\src\log\motor_current.csv","w") 
 file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
 
+# full value variables.
+DEAD_ZONE_LOWER_THR = 300
+DEAD_ZONE_UPPER_THR = 3300
+InnerHandleFULLValue = 0
+# InnerHandleChannel1 = 0
+# InnerHandleChannel2 = 0
+prev_int_inner_handle_channel = [5555,5555]
+# prev_int_inner_handle_channel2 = 5555
+Delta_Inner = 0
+Delta_Inner2 = 0
+
+
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
 
@@ -79,6 +91,15 @@ def gui_loop(device):
     # cnt = None
     # prev_cnt = None
     # value = None
+    # vars for full value of encoder.
+    global prev_int_inner_handle_channel
+    # global prev_int_inner_handle_channel2
+    global Delta_Inner
+    global Delta_Inner2
+    global InnerHandleFULLValue
+    global DEAD_ZONE_LOWER_THR
+    global DEAD_ZONE_UPPER_THR
+
 
     while True:
         # Reset the counter
@@ -120,6 +141,7 @@ def gui_loop(device):
         # Update the GUI
         if len(value) >= READ_SIZE:
             # save into file:
+            digital = (int(value[START_INDEX + 1]) << 8) + int(value[START_INDEX + 0])
             analog = [(int(value[i + 1]) << 8) + int(value[i]) for i in ANALOG_INDEX_LIST]
             OverSample = [(int(value[i + 1]) << 8) + int(value[i]) for i in OVER_SAMPLE_INDEX_LIST]
             MotorCur = analog[4]  # new, after changing indexes.
@@ -127,12 +149,54 @@ def gui_loop(device):
             batteryLevel = analog[7]
             counter = (int(value[COUNTER_INDEX + 1]) << 8) + int(value[COUNTER_INDEX])
             count_dif = counter - prev_counter 
+            
+            #---------------------------------------------------------------------------------------
+            # aggregate handle counts of inner encoder.
+            bool_inner_isopen = bool((digital >> 0) & 0x0001)
+            bool_outer_isopen = bool((digital >> 1) & 0x0001)
+            int_inner_handle_channel = [analog[0],analog[3]]
+            # int_inner_handle_channel[1] = analog[3]
+            if prev_int_inner_handle_channel[0] == 5555:
+                prev_int_inner_handle_channel = [int_inner_handle_channel[0],int_inner_handle_channel[1]]
+                # prev_int_inner_handle_channel2 = int_inner_handle_channel[1]
+            
+            # DEAD_ZONE_LOWER_THR 300
+            # DEAD_ZONE_UPPER_THR 3300
+            if (bool_inner_isopen != 0):
+            # if ( 0 ):
+                pass
+                InnerHandleFULLValue = 0;
+                # print("-",end = " ", flush=True)
+            else:
+                  # // check if last 2 samples are in the "live zone", 2 samples are needed to check stability 
+                  # // (in the dead zone we can get garbage values, which might be in the right range)
+                if int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
+                   int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR and \
+                   prev_int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
+                   prev_int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR:
+                    Delta_Inner = -(int_inner_handle_channel[0] - prev_int_inner_handle_channel[0])
+                    InnerHandleFULLValue += Delta_Inner
+                else:
+                    Delta_Inner = -(int_inner_handle_channel[1] - prev_int_inner_handle_channel[1])
+                    InnerHandleFULLValue += Delta_Inner
+
+            if InnerHandleFULLValue < 0 :
+                InnerHandleFULLValue = 0 
+
+            prev_int_inner_handle_channel[0] = int_inner_handle_channel[0]
+            prev_int_inner_handle_channel[1] = int_inner_handle_channel[1]
+            #---------------------------------------------------------------------------------------
+            
+            
+            
+            
             global file1
             # if count_dif > 1 :
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), " <<<<<--- " ,"\n" ]  
             # else:
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
-            L = [ str(counter),",   ", str(MotorCur), ", " , str(count_dif), "\n" ]  
+            # L = [ str(counter),",   ", str(MotorCur), ", " , str(InnerHandleFULLValue), "\n" ]  
+            L = [ str(int_inner_handle_channel[1]),",   ", str(int_inner_handle_channel[0]), ", " , str(InnerHandleFULLValue), "\n" ]  
             
             # add the Data.Master.ADC[5] just before the OverSample elements.
             # file2.writelines(L) # commented out on 2020_05_28, for motor current recording.
