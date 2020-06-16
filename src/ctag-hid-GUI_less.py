@@ -153,11 +153,16 @@ def gui_loop(device):
             batteryLevel = analog[7]
             counter = (int(value[COUNTER_INDEX + 1]) << 8) + int(value[COUNTER_INDEX])
             count_dif = counter - prev_counter 
+            sleepTimer = (int(value[COUNTER_INDEX+4 + 1]) << 8) + int(value[COUNTER_INDEX+4])
+            FW_DeltaInner = (int(value[COUNTER_INDEX+6 + 1]) << 8) + int(value[COUNTER_INDEX+6])
+
+
             
             #---------------------------------------------------------------------------------------
             # aggregate handle counts of inner encoder.
             bool_inner_isopen = bool((digital >> 0) & 0x0001)
             bool_outer_isopen = bool((digital >> 1) & 0x0001)
+            bool_reset = bool((digital >> 4) & 0x0001)
             int_inner_handle_channel = [analog[0],analog[3]]
             # int_inner_handle_channel[1] = analog[3]
             if prev_int_inner_handle_channel[0] == 5555:
@@ -225,8 +230,12 @@ def gui_loop(device):
             # L = [ str(counter),",   ", str(MotorCur), ", " , str(InnerHandleFULLValue), "\n" ]  
             # L = [ str(int_inner_handle_channel[1]),",   ", str(int_inner_handle_channel[0]), ", " \
                  # , str(InnerHandleFULLValue),", " , str(Active_Encoder), "\n" ]  
-            L = [ str(Delta_Inner),",   ", str(int_inner_handle_channel[0]), ", " \
-                 , str(InnerHandleFULLValue),", " , str(Active_Encoder), "\n" ]  
+            # L = [ str(Delta_Inner),",   ", str(int_inner_handle_channel[0]), ", " \
+                 # , str(InnerHandleFULLValue),", " , str(Active_Encoder), "\n" ]  
+            # L = [ str(Delta_Inner),",   ", str(int_inner_handle_channel[0]), ", " \
+                 # , str(InnerHandleFULLValue),", " , str(FW_DeltaInner), "\n" ]  
+            # L = ('%05d, %05d, %05d, %05d\n ' % (Delta_Inner, int_inner_handle_channel[0],InnerHandleFULLValue,FW_DeltaInner))
+            L = ('%05d, %05d, %04d, %05d\n ' % (Delta_Inner, int_inner_handle_channel[0],bool_reset,FW_DeltaInner))
             
             # add the Data.Master.ADC[5] just before the OverSample elements.
             # file2.writelines(L) # commented out on 2020_05_28, for motor current recording.
