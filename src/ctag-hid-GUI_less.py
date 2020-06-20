@@ -23,13 +23,15 @@ file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w")
 DEAD_ZONE_LOWER_THR = 300
 DEAD_ZONE_UPPER_THR = 3300
 InnerHandleFULLValue = 0
+OuterHandleFULLValue = 0
 # InnerHandleChannel1 = 0
 # InnerHandleChannel2 = 0
 prev_int_inner_handle_channel = [5555,5555]
-# prev_int_inner_handle_channel2 = 5555
+prev_int_outer_handle_channel = [5555,5555]
 Delta_Inner = 0
-Delta_Inner2 = 0
+Delta_Outer = 0
 Active_Encoder = 0
+Active_Encoder2 = 0
 Check_Change_Channel = 0
 
 
@@ -95,13 +97,15 @@ def gui_loop(device):
     # value = None
     # vars for full value of encoder.
     global prev_int_inner_handle_channel
-    # global prev_int_inner_handle_channel2
+    global prev_int_outer_handle_channel
     global Delta_Inner
-    global Delta_Inner2
+    global Delta_Outer
     global InnerHandleFULLValue
+    global OuterHandleFULLValue
     global DEAD_ZONE_LOWER_THR
     global DEAD_ZONE_UPPER_THR
     global Active_Encoder
+    global Active_Encoder2
     global Check_Change_Channel
 
 
@@ -159,16 +163,14 @@ def gui_loop(device):
 
             
             #---------------------------------------------------------------------------------------
-            # aggregate handle counts of inner encoder.
+            # aggregate handle counts of < inner > encoder.
             bool_inner_isopen = bool((digital >> 0) & 0x0001)
             bool_outer_isopen = bool((digital >> 1) & 0x0001)
             bool_reset = bool((digital >> 4) & 0x0001)
             int_inner_handle_channel = [analog[0],analog[3]]
-            # int_inner_handle_channel[1] = analog[3]
             if prev_int_inner_handle_channel[0] == 5555:
                 prev_int_inner_handle_channel = [int_inner_handle_channel[0],int_inner_handle_channel[1]]
                 Active_Encoder = 0
-                # prev_int_inner_handle_channel2 = int_inner_handle_channel[1]
             
             # DEAD_ZONE_LOWER_THR 300
             # DEAD_ZONE_UPPER_THR 3300
@@ -178,18 +180,6 @@ def gui_loop(device):
                 InnerHandleFULLValue = 0;
                 # print("-",end = " ", flush=True)
             else:
-                  # // check if last 2 samples are in the "live zone", 2 samples are needed to check stability 
-                  # // (in the dead zone we can get garbage values, which might be in the right range)
-                # if int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
-                   # int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR and \
-                   # prev_int_inner_handle_channel[0] > DEAD_ZONE_LOWER_THR and \
-                   # prev_int_inner_handle_channel[0] < DEAD_ZONE_UPPER_THR:
-                    # Delta_Inner = -(int_inner_handle_channel[0] - prev_int_inner_handle_channel[Active_Encoder])
-                    # InnerHandleFULLValue += Delta_Inner
-                # else:
-                    # Delta_Inner = -(int_inner_handle_channel[1] - prev_int_inner_handle_channel[1])
-                    # InnerHandleFULLValue += Delta_Inner
-
                 Delta_Inner = -(int_inner_handle_channel[Active_Encoder] - prev_int_inner_handle_channel[Active_Encoder])
                 InnerHandleFULLValue += Delta_Inner
 
@@ -219,6 +209,55 @@ def gui_loop(device):
             prev_int_inner_handle_channel[1] = int_inner_handle_channel[1]
             #---------------------------------------------------------------------------------------
             
+            #---------------------------------------------------------------------------------------
+            # aggregate handle counts of < outer > encoder.
+            
+            # bool_inner_isopen = bool((digital >> 0) & 0x0001)
+            # bool_outer_isopen = bool((digital >> 1) & 0x0001)
+            # bool_reset = bool((digital >> 4) & 0x0001)
+            
+            int_outer_handle_channel = [analog[1],analog[2]]
+            if prev_int_outer_handle_channel[0] == 5555:
+                prev_int_outer_handle_channel = [int_outer_handle_channel[0],int_outer_handle_channel[1]]
+                Active_Encoder2 = 0
+            
+            # DEAD_ZONE_LOWER_THR 300
+            # DEAD_ZONE_UPPER_THR 3300
+            if (bool_outer_isopen != 0):
+            # if ( 0 ):
+                pass
+                OuterHandleFULLValue = 0;
+                # print("-",end = " ", flush=True)
+            else:
+                Delta_Outer = -(int_outer_handle_channel[Active_Encoder2] - prev_int_outer_handle_channel[Active_Encoder2])
+                OuterHandleFULLValue += Delta_Outer
+
+            if( Check_Change_Channel > 0):
+                Check_Change_Channel -= 1
+
+            # if( Check_Change_Channel == 0):
+            if  int_outer_handle_channel[Active_Encoder2] > DEAD_ZONE_LOWER_THR and \
+                int_outer_handle_channel[Active_Encoder2] < DEAD_ZONE_UPPER_THR and \
+                prev_int_outer_handle_channel[Active_Encoder2] > DEAD_ZONE_LOWER_THR and \
+                prev_int_outer_handle_channel[Active_Encoder2] < DEAD_ZONE_UPPER_THR:
+                # stay with the active channel
+                pass
+            else:
+                #change Active_Encoder2
+                if (Active_Encoder2 == 1):
+                    Active_Encoder2 = 0
+                else:
+                    Active_Encoder2 = 1
+                # if active channel was change, dont change again for 50 mS (25 cycles)
+                Check_Change_Channel = 25
+
+            if OuterHandleFULLValue < 0 :
+                OuterHandleFULLValue = 0 
+
+            prev_int_outer_handle_channel[0] = int_outer_handle_channel[0]
+            prev_int_outer_handle_channel[1] = int_outer_handle_channel[1]
+            #---------------------------------------------------------------------------------------
+            
             
             
             
@@ -235,7 +274,10 @@ def gui_loop(device):
             # L = [ str(Delta_Inner),",   ", str(int_inner_handle_channel[0]), ", " \
                  # , str(InnerHandleFULLValue),", " , str(FW_DeltaInner), "\n" ]  
             # L = ('%05d, %05d, %05d, %05d\n ' % (Delta_Inner, int_inner_handle_channel[0],InnerHandleFULLValue,FW_DeltaInner))
-            L = ('%05d, %05d, %04d, %05d\n ' % (Delta_Inner, int_inner_handle_channel[0],bool_reset,FW_DeltaInner))
+            # 2020_06_18
+            # L = ('%05d, %05d, %04d, %05d\n ' % (Delta_Inner, int_inner_handle_channel[0],bool_reset,FW_DeltaInner))
+            
+            L = ('%05d, %05d, %04d, %05d\n ' % (Delta_Outer, int_outer_handle_channel[0],bool_reset,FW_DeltaInner))
             
             # add the Data.Master.ADC[5] just before the OverSample elements.
             # file2.writelines(L) # commented out on 2020_05_28, for motor current recording.
