@@ -26,6 +26,13 @@ READ_TIMEOUT = 2 # 2ms
 WRITE_DATA = bytes.fromhex("3f3ebb00b127ff00ff00ff00ffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 DEFAULT_WRITE_DATA = WRITE_DATA
 WRITE_DATA_CMD_I = bytes.fromhex("3f3ebb00b127ff00ff00ff0049ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+#.........................................................##........................................
+WRITE_DATA_CMD_S = bytes.fromhex("3f3ebb00b127ff00ff00ff0053ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+# 'A' - keep Alive + fast BLE update (every 20 msec)
+WRITE_DATA_CMD_A = bytes.fromhex("3f3ebb00b127ff00ff00ff0041ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+# moderate BLE update rate every 50 mSec by 'M' command
+WRITE_DATA_CMD_M = bytes.fromhex("3f3ebb00b127ff00ff00ff004dff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+
 
 SLEEP_AMOUNT = 0.002 # Read from HID every 2 milliseconds
 PRINT_TIME = 1.0 # Print every 1 second
@@ -78,11 +85,23 @@ def update_checkbox(checkbox, bool_value):
     else:
         checkbox.deselect()
 
-def button_callback():
+def ignore_button_CallBack():
     global special_cmd
     global ignore_red_handle_state
     special_cmd = 'I'
     ignore_red_handle_state = True
+
+def sleep_button_CallBack():
+    global special_cmd
+    special_cmd = 'S'
+
+def alive_button_CallBack():
+    global special_cmd
+    special_cmd = 'A'
+
+def moderate_button_CallBack():
+    global special_cmd
+    special_cmd = 'M'
 
 	
 def gui_loop(device):
@@ -103,6 +122,18 @@ def gui_loop(device):
         if special_cmd == 'I':
             WRITE_DATA = WRITE_DATA_CMD_I
             print("special_cmd I")
+            special_cmd = 0
+        elif special_cmd == 'S':
+            WRITE_DATA = WRITE_DATA_CMD_S
+            print("special_cmd S")
+            special_cmd = 0
+        elif special_cmd == 'A':
+            WRITE_DATA = WRITE_DATA_CMD_A
+            print("special_cmd A -> keep Alive + fast BLE update (every 20 msec)")
+            special_cmd = 0
+        elif special_cmd == 'M':
+            WRITE_DATA = WRITE_DATA_CMD_M
+            print("special_cmd M -> moderate BLE update rate every 50 mSec")
             special_cmd = 0
         else:
             WRITE_DATA = DEFAULT_WRITE_DATA
@@ -549,20 +580,9 @@ def my_widgets(frame):
         row=row,
         column=1
     )
-# B = tkinter.Button(top, text ="Hello", command = ignoreCallBack)
-    
-    w = tk.Button(
-        frame,
-        text ="send ignore",
-        # command = ignoreCallBack
-        command = button_callback
-    )
-    global red_handle_ignore
-    red_handle_ignore = w     # there is no meaning for the button object name, the callback is used
-    w.grid(
-        row=row,
-        column=3
-    )
+
+    red_handle_ignore = tk.Button(frame,text ="send ignore",command = ignore_button_CallBack)
+    red_handle_ignore.grid(row=row,column=3)
     
     # checkbox for the ignore red handle 
     w = tk.Checkbutton(
@@ -721,6 +741,16 @@ def my_widgets(frame):
 
     # Seperator
     row = my_seperator(frame, row)
+
+    red_handle_ignore = tk.Button(frame,text ="send sleep",command = sleep_button_CallBack)
+    red_handle_ignore.grid(row=row,column=0)
+
+    red_handle_ignore = tk.Button(frame,text ="Keep alive (fast BLE)",command = alive_button_CallBack)
+    red_handle_ignore.grid(row=row,column=1)
+
+    red_handle_ignore = tk.Button(frame,text ="Moderate BLE",command = moderate_button_CallBack)
+    red_handle_ignore.grid(row=row,column=2)
+
 
 def init_parser():
     parser = argparse.ArgumentParser(
