@@ -19,6 +19,7 @@ PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # open recording log file:
 file1 = open("C:\Work\Python\CTAG_HID\src\log\gui_clicker_log.csv","w") 
 ctag_fault = 0
+once = 1
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
@@ -32,7 +33,8 @@ WRITE_DATA_CMD_S = bytes.fromhex("3f3ebb00b127ff00ff00ff0053ff33ff00000000000000
 WRITE_DATA_CMD_A = bytes.fromhex("3f3ebb00b127ff00ff00ff0041ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 # moderate BLE update rate every 50 mSec by 'M' command
 WRITE_DATA_CMD_M = bytes.fromhex("3f3ebb00b127ff00ff00ff004dff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
-
+# set_BSL_mode
+WRITE_DATA_CMD_B = bytes.fromhex("3f3eaa00b127ff00ff00ff004dff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 
 SLEEP_AMOUNT = 0.002 # Read from HID every 2 milliseconds
 PRINT_TIME = 1.0 # Print every 1 second
@@ -41,6 +43,9 @@ START_INDEX = 2 + 4 # Ignore the first two bytes, then skip the version (4 bytes
 # ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 4 * 2 + 1, 2)) + [START_INDEX + 6 * 2,]
 ANALOG_INDEX_LIST = list(range(START_INDEX + 2, START_INDEX + 8 * 2 + 1, 2)) 
 COUNTER_INDEX = 2 + 22 + 18 # Ignore the first two bytes, then skip XData1 (22 bytes) and OverSample (==XDataSlave1; 18 bytes)
+# version string is like this:
+# Received data: b'3f3002022600 = 2.2.38
+VERSION_INDEX = 2 
 
 OUTER_HANDLE_CHANNEL1_STYLE = "OuterHandleChannel1"
 OUTER_HANDLE_CHANNEL2_STYLE = "OuterHandleChannel2"
@@ -72,6 +77,7 @@ reset_check = list()
 counter_entry = list()
 clicker_counter_entry = list()
 fault_entry = list()
+version_entry = list()
 special_cmd = 0
 ignore_red_handle_button = None
 ignore_red_handle_checkbutton = None
@@ -102,6 +108,10 @@ def alive_button_CallBack():
 def moderate_button_CallBack():
     global special_cmd
     special_cmd = 'M'
+
+def BSL_mode_button_CallBack():
+    global special_cmd
+    special_cmd = 'B'
 
 	
 def gui_loop(device):
@@ -135,10 +145,16 @@ def gui_loop(device):
             WRITE_DATA = WRITE_DATA_CMD_M
             print("special_cmd M -> moderate BLE update rate every 50 mSec")
             special_cmd = 0
+        elif special_cmd == 'B':
+            WRITE_DATA = WRITE_DATA_CMD_B
+            print("special_cmd B -> set_BSL_mode  --- this will stop HID communication with this GUI")
+            special_cmd = 0
         else:
             WRITE_DATA = DEFAULT_WRITE_DATA
         
         device.write(WRITE_DATA)
+        if WRITE_DATA == WRITE_DATA_CMD_B:
+            root. destroy() 
 
         # If not enough time has passed, sleep for SLEEP_AMOUNT seconds
         if (timer() - time) < SLEEP_AMOUNT:
@@ -173,6 +189,15 @@ def handler(value, do_print=False):
     analog = [(int(value[i + 1]) << 8) + int(value[i]) for i in ANALOG_INDEX_LIST]
     counter = (int(value[COUNTER_INDEX + 1]) << 8) + int(value[COUNTER_INDEX])
     
+    ctag_msp430_version = dict(MAJOR=0,MINOR=0,BUILD=7)
+    ctag_msp430_version['MAJOR'] = (int(value[VERSION_INDEX])  )
+    ctag_msp430_version['MINOR'] = (int(value[VERSION_INDEX+1]) )
+    ctag_msp430_version['BUILD'] = (int(value[VERSION_INDEX+2]) )
+    global once
+    if once == 1:
+        print(ctag_msp430_version)
+        once = 0
+
     
     clicker_counter = (int(value[COUNTER_INDEX+2 + 1]) << 8) + int(value[COUNTER_INDEX+2])
     sleepTimer = (int(value[COUNTER_INDEX+4 + 1]) << 8) + int(value[COUNTER_INDEX+4])
@@ -313,6 +338,9 @@ def handler(value, do_print=False):
 
     entry_fault.delete(0, tk.END)
     entry_fault.insert(tk.END, "%d" % int_ctag_fault)
+
+    version_entry.delete(0, tk.END)
+    version_entry.insert(tk.END, "%s" % ctag_msp430_version)
 
     root.update()
 
@@ -749,6 +777,21 @@ def my_widgets(frame):
     red_handle_ignore.grid(row=row,column=1)
 
     red_handle_ignore = tk.Button(frame,text ="Moderate BLE",command = moderate_button_CallBack)
+    red_handle_ignore.grid(row=row,column=2)
+
+    row += 1
+
+    # Seperator
+    row = my_seperator(frame, row)
+
+    # C_TAG version indication
+    ttk.Label(frame,text="Version:").grid(row=row,column=0,sticky=tk.E,)
+    w = ttk.Entry(frame,width=31,)
+    global version_entry
+    version_entry = w
+    w.grid(padx=10,pady=5,row=row,column=1,columnspan=2,sticky=tk.W,)
+
+    red_handle_ignore = tk.Button(frame,text ="BSL !!!(DONT PRESS)",command = BSL_mode_button_CallBack)
     red_handle_ignore.grid(row=row,column=2)
 
 
