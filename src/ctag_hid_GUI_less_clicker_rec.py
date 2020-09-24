@@ -54,6 +54,7 @@ red_handle = list()
 reset_check = list()
 counter_entry = list()
 prev_clicker_counter = 0
+from_zero_clicker_counts = 0
 
 root = None
 
@@ -125,11 +126,14 @@ def gui_loop(device):
             count_dif = counter - prev_counter 
             clicker_counter = (int(value[COUNTER_INDEX+2 + 1]) << 8) + int(value[COUNTER_INDEX+2])
             global prev_clicker_counter
+            global from_zero_clicker_counts
             if prev_clicker_counter == 0:
                 prev_clicker_counter = clicker_counter
                 first_clicker_counter = clicker_counter
             if prev_clicker_counter != clicker_counter:
-                print("clicker: %d" % (clicker_counter-first_clicker_counter))
+                from_zero_clicker_counts = clicker_counter-first_clicker_counter
+                # print("clicker: %d" % (clicker_counter-first_clicker_counter))
+                print("clicker: %d" % (from_zero_clicker_counts))
                 prev_clicker_counter = clicker_counter
             
             global file1
@@ -137,12 +141,12 @@ def gui_loop(device):
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), " <<<<<--- " ,"\n" ]  
             # else:
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
-            L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
+            L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif),", " , str(from_zero_clicker_counts), "\n" ]  
             
             # add the Data.Master.ADC[5] just before the OverSample elements.
             file2.writelines(L) 
             for i in range(0,9):
-                L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(count_dif), "\n" ]  
+                L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(count_dif),", " , str(from_zero_clicker_counts), "\n" ]  
                 file2.writelines(L2) 
             file1.writelines(L) 
             # handler(value, do_print=do_print)
