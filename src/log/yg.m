@@ -55,6 +55,7 @@ d=diff(b(:,2));
 % ---------------------------- remove for regular recording (*start*) ------------------------------
 % 2020_09_24__15_22
 plot(diff(b(:,4))*4000,'m-o');
+plot(b(:,3),'g-o');
 % ---------------------------- remove for regular recording (**end**) ------------------------------
 
 hold off

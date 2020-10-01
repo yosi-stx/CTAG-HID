@@ -142,6 +142,8 @@ def gui_loop(device):
                 print("clicker: %d" % (from_zero_clicker_counts))
                 prev_clicker_counter = clicker_counter
             
+            # read from microphone signal: (clicker_sound)
+            
             global file1
             # if count_dif > 1 :
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), " <<<<<--- " ,"\n" ]  
