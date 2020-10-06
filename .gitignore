@@ -9,3 +9,7 @@ yg*.py
 clicker_log.txt
 src/log/2020_09_15__23_19_(new_Handle_clicks_a).mat
 src/log/2020_09_15__23_39_(new_Handle_clicks_b).mat
+build
+dist
+src/ctag-hid.spec
+src/ctag_hid_GUI_less_clicker_rec.spec

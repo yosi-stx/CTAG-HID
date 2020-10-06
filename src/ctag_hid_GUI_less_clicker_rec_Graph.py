@@ -4,7 +4,11 @@ from binascii import hexlify
 import sys
 import argparse
 import threading
-from time import perf_counter as timer
+#from time import perf_counter as timer
+from timeit import default_timer as timer
+from time import sleep
+import pyaudio as pa
+from queue import Queue
 
 
 import include_dll_path
@@ -17,6 +21,22 @@ PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
 file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
 file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
+# PyAudio constants
+PA_READ_CHUNK = 200
+PA_FRAMES_PER_BUFFER = 200
+PA_FORMAT = pa.paInt16
+PA_FORMAT_LEN = int(16 / 8) # 2 bytes each
+PA_FORMAT_MAX_VAL = 65536
+PA_CHANNELS = 1
+PA_RATE = 10000 # Every 0.1 ms
+# PA_INITIAL_SLEEP = 0.002 # Sleep for 2 ms after starting the stream
+# PA_LONG_RECORDING = 0.001 # The recording took a long time
+# PA_IN_DATA_INDEX = -2 # The last two bytes (2 samples each 2 bytes (paInt16))
+
+GRAPH_MAX_VAL = 4000
+
+CLICKER_SOUND_OFFSET = GRAPH_MAX_VAL / 2
+CLICKER_SOUND_AMPLIFY = 20.0
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
@@ -59,7 +79,48 @@ counter_entry = list()
 prev_clicker_counter = 0
 from_zero_clicker_counts = 0
 
+class DummyQueue:
+    def __init__(self, val):
+        self._val = val
+    def get(self):
+        return self._val
+
+# PyAudio objects
+pa_dev = None # The PyAudio device
+pa_stream = None # The PyAudio input stream
+# pa_in_data = [0] * PA_READ_CHUNK # The input data read every 2 ms
+pa_in_data = DummyQueue(0) # Dummy queue that returns 0
+
 root = None
+
+pa_callback_rec_start = None
+def pa_callback(in_data, frame_count, time_info, status_flags):
+    global pa_callback_rec_start
+    if pa_callback_rec_start != None:
+        time = timer() - pa_callback_rec_start
+        # if time > 0.021:
+        #     print("pa_callback took too long: %f" % (time))
+    global pa_in_data
+    if isinstance(pa_in_data, DummyQueue):
+        pa_in_data = Queue(3 * PA_READ_CHUNK)
+    # li = [None] * PA_READ_CHUNK
+    for i in range(PA_READ_CHUNK):
+        data = int.from_bytes(
+            bytes=in_data[(i * PA_FORMAT_LEN):((i + 1) * PA_FORMAT_LEN)],
+            byteorder=sys.byteorder,
+            signed=True
+        )
+        data = data / PA_FORMAT_MAX_VAL # Scale from 0.0 to 1.0
+        data = min(data * CLICKER_SOUND_AMPLIFY, 1.0) # Amplify and cap to 1.0
+        data = data * GRAPH_MAX_VAL / 2 # Scale to the graph max value (signed)
+        data = data + CLICKER_SOUND_OFFSET # Align the data to the middle of the graph (unsigned)
+        data = int(data) # Return it as integer
+        # li[i] = data
+        pa_in_data.put(data)
+    # pa_in_data = int.from_bytes(bytes=in_data[:], byteorder=sys.byteorder, signed=True)
+    # pa_in_data = li
+    pa_callback_rec_start = timer()
+    return (None, pa.paContinue) # Required return format of input callback
 
 def update_checkbox(checkbox, bool_value):
     if (bool_value):
@@ -67,6 +128,7 @@ def update_checkbox(checkbox, bool_value):
     else:
         checkbox.deselect()
 
+clicker_sound_index = 0
 def gui_loop(device):
     do_print = True
     print_time = 0.0
@@ -81,6 +143,7 @@ def gui_loop(device):
     # prev_cnt = None
     # value = None
 
+    global clicker_sound_index
     while True:
         # Reset the counter
         if (do_print):
@@ -143,6 +206,8 @@ def gui_loop(device):
                 prev_clicker_counter = clicker_counter
             
             # read from microphone signal: (clicker_sound)
+            global pa_in_data # Don't write to this variable (not thread safe)
+            clicker_sound = pa_in_data # Read the sampled data
             
             global file1
             # if count_dif > 1 :
@@ -150,13 +215,15 @@ def gui_loop(device):
             # else:
                 # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif), "\n" ]  
             # L = [ str(counter),",   ", str(clicker_analog), ", " , str(count_dif),", " , str(from_zero_clicker_counts), "\n" ]  
-            L = [ str(counter),",   ", str(clicker_analog), ", " , str(clicker_Rec),", " , str(from_zero_clicker_counts), "\n" ]  
+            # L = [ str(counter),",   ", str(clicker_analog), ", " , str(clicker_Rec),", " , str(from_zero_clicker_counts), "\n" ]  
+            L = [ str(counter),",   ", str(clicker_analog), ", " , str(clicker_sound.get()),", " , str(from_zero_clicker_counts), "\n" ]  
             
             # add the Data.Master.ADC[5] just before the OverSample elements.
             file2.writelines(L) 
             for i in range(0,9):
                 # L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(count_dif),", " , str(from_zero_clicker_counts), "\n" ]  
-                L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(clicker_Rec),", " , str(from_zero_clicker_counts), "\n" ]  
+                # L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(clicker_Rec),", " , str(from_zero_clicker_counts), "\n" ]  
+                L2 = [ str(counter),",   ", str(OverSample[i]), ", " , str(clicker_sound.get()),", " , str(from_zero_clicker_counts), "\n" ]  
                 file2.writelines(L2) 
             file1.writelines(L) 
             # handler(value, do_print=do_print)
@@ -175,6 +242,11 @@ def gui_loop(device):
 
         # Update the do_print flag
         do_print = (timer() - print_time) >= PRINT_TIME
+
+        # Increment the gui loop iteration counter
+        clicker_sound_index += 10
+        if clicker_sound_index >= PA_READ_CHUNK:
+            clicker_sound_index = 0
 
 def handler(value, do_print=False):
     if do_print:
@@ -604,6 +676,20 @@ def main():
     device = None
 
     try:
+        global pa_dev
+        global pa_stream
+        pa_dev = pa.PyAudio()
+        pa_stream = pa_dev.open(
+            format=PA_FORMAT,
+            channels=PA_CHANNELS,
+            rate=PA_RATE,
+            input=True,
+            frames_per_buffer=PA_FRAMES_PER_BUFFER,
+            stream_callback=pa_callback
+        )
+        pa_stream.start_stream()
+        # sleep(PA_INITIAL_SLEEP) # Sleep for 2 ms
+
         if (id_mode):
             device = hid.Device(vid=VENDOR_ID, pid=PRODUCT_ID)
         elif (path_mode):
@@ -623,6 +709,11 @@ def main():
         file2.close() #to change file access modes 
         if device != None:
             device.close()
+        if pa_stream != None:
+            pa_stream.stop_stream() # Stop recording
+            pa_stream.close() # Terminate the stream
+        if pa_dev != None:
+            pa_dev.terminate() # Terminate PyAudio
 
 if __name__ == "__main__":
     main()
