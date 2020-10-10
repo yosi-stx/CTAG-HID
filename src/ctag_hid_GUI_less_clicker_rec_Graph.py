@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+# file: ctag_hid_GUI_less_clicker_rec_Graph.py
 from binascii import hexlify
 import sys
 import argparse
@@ -9,18 +9,26 @@ from timeit import default_timer as timer
 from time import sleep
 import pyaudio as pa
 from queue import Queue
+import csv_plot
+from ctag_hid_log_files_path import *
 
 
 import include_dll_path
 import hid
+import os
 
 VENDOR_ID = 0x24b3 # Simbionix
 PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = None
 # open recording log file:
+if not os.path.exists('log'):
+    os.makedirs('log')
 # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
-file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
-file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
+#file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
+#file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
+file1 = open(FILE1_PATH,"w") 
+file2 = open(FILE2_PATH,"w") 
+
 # PyAudio constants
 PA_READ_CHUNK = 200
 PA_FRAMES_PER_BUFFER = 200
@@ -144,7 +152,8 @@ def gui_loop(device):
     # value = None
 
     global clicker_sound_index
-    while True:
+    curr_thrd = threading.current_thread()
+    while getattr(curr_thrd, "do_run", True):
         # Reset the counter
         if (do_print):
             print_time = timer()
@@ -699,21 +708,33 @@ def main():
 
         
         # Create thread that calls
-        threading.Thread(target=gui_loop, args=(device,), daemon=True).start()
+        thrd = threading.Thread(target=gui_loop, args=(device,), daemon=True)
+        thrd.start()
 
         input()
+
+        thrd.do_run = False # Signal the thread to stop
+        thrd.join() # Wait for the thread to stop
+    except Exception as err:
+        print(err)
+        sys.exit(1)
     finally:
         global file1
         global file2
         file1.close() #to change file access modes 
         file2.close() #to change file access modes 
-        if device != None:
-            device.close()
-        if pa_stream != None:
-            pa_stream.stop_stream() # Stop recording
-            pa_stream.close() # Terminate the stream
-        if pa_dev != None:
-            pa_dev.terminate() # Terminate PyAudio
+        try:
+            if device != None:
+                device.close()
+            if pa_stream != None:
+                pa_stream.stop_stream() # Stop recording
+                pa_stream.close() # Terminate the stream
+            if pa_dev != None:
+                pa_dev.terminate() # Terminate PyAudio
+        except Exception as err:
+            print(err)
+
+    csv_plot.main()
 
 if __name__ == "__main__":
     main()

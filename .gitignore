@@ -13,3 +13,8 @@ build
 dist
 src/ctag-hid.spec
 src/ctag_hid_GUI_less_clicker_rec.spec
+src/ctag_hid_GUI_less_clicker_rec_Graph_old.py
+Backup
+log_
+src/ctag_hid_GUI_less_clicker_rec_Graph.spec
+src/csv_plot.spec

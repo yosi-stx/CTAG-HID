@@ -12,12 +12,26 @@ from tkinter import ttk
 
 import include_dll_path
 import hid
+import os
 
 VENDOR_ID = 0x24b3 # Simbionix
 PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = None
 # open recording log file:
-file1 = open("C:\Work\Python\CTAG_HID\src\log\gui_clicker_log.csv","w") 
+if not os.path.exists('log'):
+    os.makedirs('log')
+
+dir = os.path.dirname(os.path.abspath(__file__))
+# print(dir)
+print("-- current running folder: %s" % dir )
+filename = os.path.join(dir, 'log\gui_clicker_log.csv')
+print("-- file to open for recording: %s" % filename )
+# print(filename)
+
+# exit()
+# file1 = open("C:\Work\Python\CTAG_HID\src\log\gui_clicker_log.csv","w") 
+file1 = open(filename,"w") 
+
 ctag_fault = 0
 once = 1
 

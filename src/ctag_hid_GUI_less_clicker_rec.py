@@ -9,14 +9,19 @@ from time import perf_counter as timer
 
 import include_dll_path
 import hid
+import os
 
 VENDOR_ID = 0x24b3 # Simbionix
 PRODUCT_ID = 0x1005 # Simbionix MSP430 Controller
 # file1 = None
 # open recording log file:
-# file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
-file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
-file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
+if not os.path.exists('log'):
+    os.makedirs('log')
+
+# file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.csv","w") 
+# file2 = open("C:\Work\Python\CTAG_HID\src\log\clicker_overSample.csv","w") 
+file1 = open("log\clicker_log.csv","w") 
+file2 = open("log\clicker_overSample.csv","w") 
 
 READ_SIZE = 64 # The size of the packet
 READ_TIMEOUT = 2 # 2ms
@@ -190,13 +195,7 @@ def handler(value, do_print=False):
     encoder4 = analog[2]
     clicker_analog = analog[5]
     
-    # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
     global file1
-    # L = [ str(clicker_analog), "," ,"\n" ]  
-    # file1.writelines(L) 
-
-
-
 
     bool_inner_isopen = bool((digital >> 0) & 0x0001)
     bool_outer_isopen = bool((digital >> 1) & 0x0001)
@@ -565,9 +564,6 @@ def main():
     global PRODUCT_ID
     PATH = None
     
-    # open recording log file:
-    # file1 = open("C:\Work\Python\CTAG_HID\src\log\clicker_log.txt","w") 
-
     # Parse the command line arguments
     parser = init_parser()
     args = parser.parse_args(sys.argv[1:])

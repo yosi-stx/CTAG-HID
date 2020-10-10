@@ -44,6 +44,12 @@ d=diff(b(:,2));
 %plot(-d,'p-k')
 % glitch
 
+% ---------------------------- remove for regular recording (*start*) ------------------------------
+% 2020_09_24__15_22
+plot(diff(b(:,4))*4000,'m-o');
+plot(b(:,3),'g-o');
+% ---------------------------- remove for regular recording (**end**) ------------------------------
+
 hold off
 % q = min(find(b(1:x2,2)>6));
 % X_LO = q - 50;
