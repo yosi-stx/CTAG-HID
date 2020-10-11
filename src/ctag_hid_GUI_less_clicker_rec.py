@@ -528,7 +528,8 @@ def my_widgets(frame):
 
 def init_parser():
     parser = argparse.ArgumentParser(
-        description="Read the HID data from C-TAG.\nIf no argument is given, the program exits."
+        description="Recording the HID data from C-TAG into CSV files.\
+                     no need for MICROPHONE for running thie file"
     )
     parser.add_argument(
         "-v", "--vendor",
