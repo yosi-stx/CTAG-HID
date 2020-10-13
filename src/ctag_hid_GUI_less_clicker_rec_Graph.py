@@ -13,6 +13,7 @@ from ctag_hid_log_files_path import *
 import record_mic
 
 
+from multiprocessing import freeze_support
 import include_dll_path
 import hid
 import os
@@ -667,4 +668,5 @@ def main():
     csv_plot.main()
 
 if __name__ == "__main__":
+    freeze_support() # Required for multiprocessing on Windows
     main()
