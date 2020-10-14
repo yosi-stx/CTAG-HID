@@ -10,7 +10,8 @@ clicker_log.txt
 src/log/2020_09_15__23_19_(new_Handle_clicks_a).mat
 src/log/2020_09_15__23_39_(new_Handle_clicks_b).mat
 build
-dist
+# Adding the distribution files to the repository (by commenting next line)
+#dist
 src/ctag-hid.spec
 src/ctag_hid_GUI_less_clicker_rec.spec
 src/ctag_hid_GUI_less_clicker_rec_Graph_old.py
