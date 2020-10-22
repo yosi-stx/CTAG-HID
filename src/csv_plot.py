@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+from warnings import filterwarnings
+filterwarnings("ignore", "(?s).*MATPLOTLIBDATA.*", category=UserWarning)
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
