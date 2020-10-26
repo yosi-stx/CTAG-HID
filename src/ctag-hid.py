@@ -858,7 +858,8 @@ def main():
     # Initialize the flags according from the command line arguments
     avail_vid = args.vendor_id != None
     avail_pid = args.product_id != None
-    avail_path = args.product_id != None
+    # avail_path = args.product_id != None
+    avail_path = args.path != None
     id_mode = avail_pid and avail_vid
     path_mode = avail_path
     default_mode = (not avail_vid) and (not avail_pid) and (not avail_path)
