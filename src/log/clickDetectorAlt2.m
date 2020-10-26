@@ -11,7 +11,8 @@ MAX_HI_STATE = 290;
 MAX_FALL_DOWN = 175; % enable 30 ms from Hi to Low.
 LINE_SIMB = 250;
 LINE_SIMB2 = 150;
-WAIT_TO_ARM =  5000*0.3; % =2000
+% WAIT_TO_ARM =  5000*0.3; % =1500
+WAIT_TO_ARM =  5000*0.4; 
 WAIT_AT_HIGH_TRESH =  5000*0.050; % =250
 click_state = 1;
 click_state_prev = 1;
