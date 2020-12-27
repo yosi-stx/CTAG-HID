@@ -37,15 +37,18 @@ def plot(file1, file2, file3):
     xb = np.arange(1, last_b_index + 1) # Start the indices from 1
     ax.plot(xb[0:x2], b[0:x2, 1], "*-b")
 
-    # Plot the clicks
-    c = b[:, 2] # The clicks counter
-    c = np.diff(c) # Diff the click counter (1 only where there's a click)
-    c = c * _MAX_VAL # Scale the clicks
-    ax.plot(c, "o-", c="magenta")
-
     # Plot the clicker_sound
     ax2 = ax.twinx()
     ax2.plot(s, "o-", c="lime")
+
+    # Plot the clicks
+    c = b[:, 2] # The clicks counter
+    c = np.diff(c) # Diff the click counter (1 only where there's a click)
+    c = c * ( _MAX_VAL )  # Scale the clicks
+    ax.plot(c, "o-", c="magenta")
+    c = c *0.95
+    ax.plot(c, "o-", c="magenta")
+
 
     # Show the graphs
     plt.show()

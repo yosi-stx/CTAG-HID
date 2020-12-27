@@ -49,6 +49,10 @@ WRITE_DATA_CMD_A = bytes.fromhex("3f3ebb00b127ff00ff00ff0041ff33ff00000000000000
 WRITE_DATA_CMD_M = bytes.fromhex("3f3ebb00b127ff00ff00ff004dff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 # set_BSL_mode
 WRITE_DATA_CMD_B = bytes.fromhex("3f3eaa00b127ff00ff00ff004dff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+# change the clicker detection algorithm
+WRITE_DATA_CMD_ALG_1 = bytes.fromhex("3f3ebb00b127ff00ff00ff0031ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+WRITE_DATA_CMD_ALG_2 = bytes.fromhex("3f3ebb00b127ff00ff00ff0032ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+WRITE_DATA_CMD_ALG_3 = bytes.fromhex("3f3ebb00b127ff00ff00ff0033ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 
 SLEEP_AMOUNT = 0.002 # Read from HID every 2 milliseconds
 PRINT_TIME = 1.0 # Print every 1 second
@@ -127,6 +131,19 @@ def BSL_mode_button_CallBack():
     global special_cmd
     special_cmd = 'B'
 
+def Alg_1_button_CallBack():
+    global special_cmd
+    special_cmd = '1'
+
+def Alg_2_button_CallBack():
+    global special_cmd
+    special_cmd = '2'
+
+def Alg_3_button_CallBack():
+    global special_cmd
+    special_cmd = '3'
+
+
 	
 def gui_loop(device):
     do_print = True
@@ -162,6 +179,18 @@ def gui_loop(device):
         elif special_cmd == 'B':
             WRITE_DATA = WRITE_DATA_CMD_B
             print("special_cmd B -> set_BSL_mode  --- this will stop HID communication with this GUI")
+            special_cmd = 0
+        elif special_cmd == '1':
+            WRITE_DATA = WRITE_DATA_CMD_ALG_1
+            print("special_cmd ALG_1 -> use the first clicker detection algorithm")
+            special_cmd = 0
+        elif special_cmd == '2':
+            WRITE_DATA = WRITE_DATA_CMD_ALG_2
+            print("special_cmd ALG_2 -> use the 2nd clicker detection algorithm")
+            special_cmd = 0
+        elif special_cmd == '3':
+            WRITE_DATA = WRITE_DATA_CMD_ALG_3
+            print("special_cmd ALG_3 -> use the 3rd clicker detection algorithm")
             special_cmd = 0
         else:
             WRITE_DATA = DEFAULT_WRITE_DATA
@@ -807,6 +836,20 @@ def my_widgets(frame):
     w.grid(padx=10,pady=5,row=row,column=1,columnspan=2,sticky=tk.W,)
 
     red_handle_ignore = tk.Button(frame,text ="BSL !!!(DONT PRESS)",command = BSL_mode_button_CallBack)
+    red_handle_ignore.grid(row=row,column=2)
+
+    row += 1
+
+    # Seperator
+    row = my_seperator(frame, row)
+
+    red_handle_ignore = tk.Button(frame,text ="Algorithm 1",command = Alg_1_button_CallBack)
+    red_handle_ignore.grid(row=row,column=0)
+
+    red_handle_ignore = tk.Button(frame,text ="Algorithm 2",command = Alg_2_button_CallBack)
+    red_handle_ignore.grid(row=row,column=1)
+
+    red_handle_ignore = tk.Button(frame,text ="Algorithm 3",command = Alg_3_button_CallBack)
     red_handle_ignore.grid(row=row,column=2)
 
 
