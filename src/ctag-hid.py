@@ -53,6 +53,7 @@ WRITE_DATA_CMD_B = bytes.fromhex("3f3eaa00b127ff00ff00ff004dff33ff00000000000000
 WRITE_DATA_CMD_ALG_1 = bytes.fromhex("3f3ebb00b127ff00ff00ff0031ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 WRITE_DATA_CMD_ALG_2 = bytes.fromhex("3f3ebb00b127ff00ff00ff0032ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 WRITE_DATA_CMD_ALG_3 = bytes.fromhex("3f3ebb00b127ff00ff00ff0033ff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+WRITE_DATA_CMD_QUERY = bytes.fromhex("3f3ebb00b127ff00ff00ff003Fff33ff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 
 SLEEP_AMOUNT = 0.002 # Read from HID every 2 milliseconds
 PRINT_TIME = 1.0 # Print every 1 second
@@ -96,10 +97,12 @@ counter_entry = list()
 clicker_counter_entry = list()
 fault_entry = list()
 version_entry = list()
+algorithm_entry = list()
 special_cmd = 0
 ignore_red_handle_button = None
 ignore_red_handle_checkbutton = None
 ignore_red_handle_state = False
+Clicker_Active_Algorithm = "-"
 
 root = None
 
@@ -142,6 +145,10 @@ def Alg_2_button_CallBack():
 def Alg_3_button_CallBack():
     global special_cmd
     special_cmd = '3'
+
+def Query_button_CallBack():
+    global special_cmd
+    special_cmd = '?'
 
 
 	
@@ -191,6 +198,10 @@ def gui_loop(device):
         elif special_cmd == '3':
             WRITE_DATA = WRITE_DATA_CMD_ALG_3
             print("special_cmd ALG_3 -> use the 3rd clicker detection algorithm")
+            special_cmd = 0
+        elif special_cmd == '?':
+            WRITE_DATA = WRITE_DATA_CMD_QUERY
+            # print("special_cmd Query -> wait for special response from FW")
             special_cmd = 0
         else:
             WRITE_DATA = DEFAULT_WRITE_DATA
@@ -242,7 +253,14 @@ def handler(value, do_print=False):
         print(ctag_msp430_version)
         once = 0
 
-    
+    # response to query command:  '?' = 0x3f
+    global Clicker_Active_Algorithm
+    if  (int(value[VERSION_INDEX]) == 0x3f) and (int(value[VERSION_INDEX+1]) == 0x21):
+        # print("Active clicker algorithm : %X" % int(value[VERSION_INDEX+2]) )
+        Clicker_Active_Algorithm = int(value[VERSION_INDEX+2])
+        print("Active clicker algorithm : %X" % Clicker_Active_Algorithm )
+
+        
     clicker_counter = (int(value[COUNTER_INDEX+2 + 1]) << 8) + int(value[COUNTER_INDEX+2])
     sleepTimer = (int(value[COUNTER_INDEX+4 + 1]) << 8) + int(value[COUNTER_INDEX+4])
 
@@ -385,6 +403,9 @@ def handler(value, do_print=False):
 
     version_entry.delete(0, tk.END)
     version_entry.insert(tk.END, "%s" % ctag_msp430_version)
+
+    algorithm_entry.delete(0, tk.END)
+    algorithm_entry.insert(tk.END, "%s" % Clicker_Active_Algorithm)
 
     root.update()
 
@@ -851,6 +872,22 @@ def my_widgets(frame):
 
     red_handle_ignore = tk.Button(frame,text ="Algorithm 3",command = Alg_3_button_CallBack)
     red_handle_ignore.grid(row=row,column=2)
+
+    row += 1
+
+    # Seperator
+    row = my_seperator(frame, row)
+
+    red_handle_ignore = tk.Button(frame,text ="Query Algorithm?",command = Query_button_CallBack)
+    red_handle_ignore.grid(padx=10,row=row,column=0)
+
+    # C_TAG Algorithm indication
+    ttk.Label(frame,text="Active Algorithm:").grid(row=row,column=1,sticky=tk.E,)
+    w = ttk.Entry(frame,width=10,)
+    global algorithm_entry
+    algorithm_entry = w
+    # w.grid(padx=5,pady=5,row=row,column=2,columnspan=1,sticky=tk.W,)
+    w.grid(row=row,column=2,sticky=tk.W,)
 
 
 def init_parser():
